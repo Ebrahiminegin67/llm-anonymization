@@ -1,3 +1,19 @@
+# My Project Notes
+
+This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesis.
+I am currently studying the codebase and understanding how the anonymization pipeline works before making changes to the dataset and running further experiments.
+
+## What I have done so far
+- Set up the environment and ran the existing code
+- Explored the anonymization pipeline and prompt engineering strategies
+- Generated the anonymization report (see `anonymization_report.html`)
+
+## Next steps
+- Change the dataset and explore different configurations
+- Run new experiments with different models
+
+---
+
 # Overview
 
 This is the repository accompanying our ICLR 2025 paper ["Large Language Models are Advanced Anonymizers"](https://arxiv.org/abs/2402.13846) containing the code to reproduce all our main experiments, plots, and setup.
