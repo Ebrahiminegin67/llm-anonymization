@@ -5,25 +5,19 @@ dryrun: False
 save_prompts: True
 timeout: 0.0
 task_config: 
-    profile_path: "data/base_inferences/synthetic/inference_0.jsonl"
-    outpath: "anonymized_results/synthetic/gpt35_full"
+    profile_path: "data/base_inferences/synthetic/test_profile.jsonl"
+    outpath: "anonymized_results/test_real_profile_gpt4o"  # Change this
     anonymizer: 
       anon_type: "llm"
       target_mode: "single"
-      max_workers: 4
+      max_workers: 1
     anon_model:
-      name: "gpt-3.5-turbo"
+      name: "gpt-4o"
       provider: "openai"
       args: {
         temperature: 0.1
       }
     inference_model:
-      name: "gpt-3.5-turbo"
-      provider: "openai"
-      args: {
-        temperature: 0.1
-      }
-    eval_inference_model:
       name: "gpt-4o"
       provider: "openai"
       args: {
@@ -39,10 +33,10 @@ task_config:
       hardness: 1
       certainty: 1
       num_tokens: 1000
-    max_num_iterations: 3
+    max_num_iterations: 2
     use_ner: False
     offset: 0
-    num_profiles: 1000
+    num_profiles: 2
 gen_model:
   name: "gpt-3.5-turbo"
   provider: "openai"

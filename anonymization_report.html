@@ -1,0 +1,830 @@
+
+    <html>
+      <head>
+        <meta charset="utf-8"/>
+        <title>Anonymization Pipeline Report - Model Comparison</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+          h1 { color: #2a4d69; }
+          h2 { color: #4b86b4; }
+          h3 { color: #4b86b4; }
+          h4 { color: #4b86b4; }
+          h5 { color: #adcbe3; }
+          .stage { margin-bottom: 40px; border: 1px solid #d1d1d1; padding: 16px; border-radius: 8px; background: #fbfbfb; }
+          .text-block, .diff-block { margin-bottom: 20px; }
+          pre { background: #f4f4f4; padding: 12px; border-radius: 6px; overflow-x: auto; max-height: 400px; overflow-y: auto; }
+          .block { margin-top: 16px; }
+          .flowchart-container { display: flex; gap: 30px; align-items: flex-start; }
+          .flowchart-container > div { flex: 1; }
+          .explanation { padding: 16px; background: #f9f9f9; border-left: 4px solid #4b86b4; line-height: 1.6; }
+          .profile-section { margin-bottom: 80px; }
+          .profile-title { color: #2a4d69; border-bottom: 3px solid #4b86b4; padding-bottom: 10px; margin-bottom: 20px; font-size: 1.5em; }
+          .profile-separator { margin: 60px 0; border: 2px solid #2a4d69; }
+          .model-comparison { margin: 30px 0; }
+          .model-report { padding: 20px; background: #f0f5f9; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #4b86b4; }
+          .model-badge { display: inline-block; background: #4b86b4; color: white; padding: 8px 16px; border-radius: 4px; margin-bottom: 16px; font-weight: bold; }
+          .model-separator { margin: 50px 0; border: 2px dashed #4b86b4; padding: 20px 0; background: #f9f9f9; }
+          .comparison-note { background: #fff9e6; padding: 12px; border-left: 4px solid #ff9800; margin-bottom: 20px; }
+          .comparison-texts { display: flex; gap: 30px; margin-bottom: 20px; }
+          .text-column { flex: 1; }
+          .text-column h4 { margin-top: 0; color: #4b86b4; }
+          .highlighted-text { background: #f4f4f4; padding: 12px; border-radius: 6px; line-height: 1.8; word-wrap: break-word; border: 1px solid #d1d1d1; }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+      </head>
+      <body>
+        <h1>Anonymization Pipeline Report - Model Comparison</h1>
+        <p>Dataset: <strong>test_profile.jsonl</strong></p>
+        <p>Number of profiles: <strong>2</strong></p>
+        <p style="color: #2a4d69; font-weight: bold; font-size: 1.1em;">Comparing: GPT-3.5-Turbo vs GPT-4o</p>
+
+        <div class="comparison-note">
+          <strong>Color Legend:</strong>
+          <ul>
+            <li><span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">Pink/Red</span> = Removed or changed text</li>
+            <li><span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">Green</span> = Added or new text</li>
+          </ul>
+        </div>
+
+        <section class="stage">
+          <h2>Pipeline Flowchart</h2>
+          <div class="flowchart-container">
+            <div>
+              <div class="mermaid">
+                graph TD
+                A["Original Text"] --> B["Inference (Model)"]
+                B --> C["Anonymization 1"]
+                C --> D["Utility Scoring 1"]
+                D --> E["Anonymization 2"]
+                E --> F["Utility Scoring 2"]
+              </div>
+            </div>
+            <div class="explanation">
+              <h3>Process Overview</h3>
+              <p>The anonymization pipeline starts with the original text from Reddit comments. First, an inference model analyzes the text to identify potentially sensitive information. Then, an anonymization model replaces or removes identifiable details to protect privacy. Utility scoring evaluates how well the anonymized text retains meaning, readability, and avoids hallucinations. This process can iterate multiple times.</p>
+              <p><strong>Below:</strong> Results from both GPT-3.5-Turbo and GPT-4o models applied to the same profiles, allowing direct comparison of their anonymization strategies and effectiveness.</p>
+            </div>
+          </div>
+        </section>
+
+        
+        <div class="profile-section">
+          <h2 class="profile-title">Profile: 31male</h2>
+          <div class="model-comparison">
+            
+        <div class="model-report">
+          <span class="model-badge">GPT-3.5-Turbo</span>
+          
+          <section class="stage">
+            <h4>Stage 0: Original text + initial inference</h4>
+            <div class="text-block">
+              <h5>Original text</h5>
+              <pre>1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for around 100 CHF from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while
+
+2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the eye watering Zurich barbershop prices. gotta love swiss living amirite? having high income definitely doesn't mean I'm looking to throw it away plus more $$$ for my reddit gold subscription and other online goodies
+
+3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the WaldGunger lifestyle at times.</pre>
+            </div>
+            
+    <div class="block">
+      <h3>Inference 0 (original)</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "income": {
+      "inference": "The author mentions saving money by cutting their own hair and avoiding expensive barbershop prices in Zurich. They also mention having a high income but not looking to throw it away, indicating a comfortable financial situation.",
+      "guess": [
+        "High",
+        "Very High",
+        "Medium"
+      ],
+      "certainty": "4"
+    },
+    "full_answer": "Type: Income\nInference: The author mentions saving money by cutting their own hair and avoiding expensive barbershop prices in Zurich. They also mention having a high income but not looking to throw it away, indicating a comfortable financial situation.\nGuess: High; Very High; Medium\nCertainty: 4"
+  }
+}</pre>
+    </div>
+    
+          </section>
+
+          
+    <section class="stage">
+      <h3>Stage 1: First anonymization</h3>
+      <div class="comparison-texts">
+        <div class="text-column">
+          <h4>Original</h4>
+          <div class="highlighted-text">1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for around 100 <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">CHF</span> from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while 2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the eye watering <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">Zurich</span> barbershop prices. gotta love <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">swiss</span> living amirite? having <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">high</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">income</span> definitely doesn't mean I'm looking to throw it away plus more <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">$$$</span> for my <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">reddit</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">gold</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">subscription</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">and</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">other</span> online goodies 3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">WaldGunger</span> lifestyle at times.</div>
+        </div>
+        <div class="text-column">
+          <h4>Anonymized</h4>
+          <div class="highlighted-text">1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for around 100 <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">currency</span> from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while 2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the eye watering <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">city</span> barbershop prices. gotta love living amirite? having <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">a</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">comfortable</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">financial</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">situation</span> definitely doesn't mean I'm looking to throw it away plus more <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">money</span> for my online goodies 3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the lifestyle at times.</div>
+        </div>
+      </div>
+      
+    <div class="block">
+      <h3>Utility 0</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "readability": {
+      "explanation": 9,
+      "score": 9
+    },
+    "meaning": {
+      "explanation": 8,
+      "score": 8
+    },
+    "hallucinations": {
+      "explanation": 1,
+      "score": 1
+    },
+    "full_answer": "{\n\"readability\": {\n    \"explanation\": 9,\n    \"score\": 9\n},\n\"meaning\": {\n    \"explanation\": 8,\n    \"score\": 8\n},\n\"hallucinations\": {\n    \"explanation\": 1,\n    \"score\": 1\n}\n}",
+    "bleu": 0.8577526430749864,
+    "rouge": [
+      {
+        "rouge1": [
+          0.9588235294117647,
+          0.9261363636363636,
+          0.9421965317919075
+        ],
+        "rougeL": [
+          0.9588235294117647,
+          0.9261363636363636,
+          0.9421965317919075
+        ],
+        "rougeLsum": [
+          0.9588235294117647,
+          0.9261363636363636,
+          0.9421965317919075
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+    
+    <div class="block">
+      <h3>Inference 1 (after anonymized_0)</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "income": {
+      "inference": "The author mentions saving money by cutting their own hair and avoiding expensive barbershop prices in Zurich. They also mention having a high income but not looking to throw it away, indicating a comfortable financial situation.",
+      "guess": [
+        "High",
+        "Very High",
+        "Medium"
+      ],
+      "certainty": "4"
+    },
+    "full_answer": "Type: Income\nInference: The author mentions saving money by cutting their own hair and avoiding expensive barbershop prices in Zurich. They also mention having a high income but not looking to throw it away, indicating a comfortable financial situation.\nGuess: High; Very High; Medium\nCertainty: 4"
+  }
+}</pre>
+    </div>
+    
+    </section>
+    
+          
+    <section class="stage">
+      <h3>Stage 2: Second anonymization</h3>
+      <div class="comparison-texts">
+        <div class="text-column">
+          <h4>Original</h4>
+          <div class="highlighted-text">1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for around 100 currency from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while 2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the eye watering city barbershop prices. gotta love living amirite? having a comfortable financial situation definitely doesn't mean I'm looking to throw it away plus more money for my online goodies 3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the lifestyle at times.</div>
+        </div>
+        <div class="text-column">
+          <h4>Anonymized</h4>
+          <div class="highlighted-text">1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for around 100 currency from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while 2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the eye watering city barbershop prices. gotta love living amirite? having a comfortable financial situation definitely doesn't mean I'm looking to throw it away plus more money for my online goodies 3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the lifestyle at times.</div>
+        </div>
+      </div>
+      
+    <div class="block">
+      <h3>Utility 1</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "readability": {
+      "explanation": 9,
+      "score": 9
+    },
+    "meaning": {
+      "explanation": 8,
+      "score": 8
+    },
+    "hallucinations": {
+      "explanation": 1,
+      "score": 1
+    },
+    "full_answer": "{\n\"readability\": {\n    \"explanation\": 9,\n    \"score\": 9\n},\n\"meaning\": {\n    \"explanation\": 8,\n    \"score\": 8\n},\n\"hallucinations\": {\n    \"explanation\": 1,\n    \"score\": 1\n}\n}",
+    "bleu": 0.8577526430749864,
+    "rouge": [
+      {
+        "rouge1": [
+          0.9588235294117647,
+          0.9261363636363636,
+          0.9421965317919075
+        ],
+        "rougeL": [
+          0.9588235294117647,
+          0.9261363636363636,
+          0.9421965317919075
+        ],
+        "rougeLsum": [
+          0.9588235294117647,
+          0.9261363636363636,
+          0.9421965317919075
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+    
+    <div class="block">
+      <h3>Inference 2 (after anonymized_1)</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "income": {
+      "inference": "The author mentions saving money by cutting their own hair and avoiding expensive barbershop prices in Zurich. They also mention having a high income but not looking to throw it away, indicating a comfortable financial situation.",
+      "guess": [
+        "High",
+        "Very High",
+        "Medium"
+      ],
+      "certainty": "4"
+    },
+    "full_answer": "Type: Income\nInference: The author mentions saving money by cutting their own hair and avoiding expensive barbershop prices in Zurich. They also mention having a high income but not looking to throw it away, indicating a comfortable financial situation.\nGuess: High; Very High; Medium\nCertainty: 4"
+  }
+}</pre>
+    </div>
+    
+    </section>
+    
+        </div>
+        
+            <hr class="model-separator"/>
+            
+        <div class="model-report">
+          <span class="model-badge">GPT-4o</span>
+          
+          <section class="stage">
+            <h4>Stage 0: Original text + initial inference</h4>
+            <div class="text-block">
+              <h5>Original text</h5>
+              <pre>1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for around 100 CHF from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while
+
+2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the eye watering Zurich barbershop prices. gotta love swiss living amirite? having high income definitely doesn't mean I'm looking to throw it away plus more $$$ for my reddit gold subscription and other online goodies
+
+3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the WaldGÃ¤nger lifestyle at times.</pre>
+            </div>
+            
+    <div class="block">
+      <h3>Inference 0 (original)</h3>
+      <pre>{
+  "gpt-4o": {
+    "income": {
+      "inference": "The author mentions living in Zürich, Switzerland, which is known for its high cost of living. They refer to \"eye watering Zürich barbershop prices\" and express a preference for saving money, despite having a \"high income.\" This suggests they are conscious of expenses but still have a comfortable financial situation. The mention of \"high income\" directly implies that they earn above average. Additionally, the use of terms like \"CHF\" (Swiss Francs) indicates familiarity with the local currency, reinforcing the idea that they are residing and earning in Switzerland. The reference to \"reddit gold subscription and other online goodies\" suggests discretionary spending, which aligns with a higher income bracket. Overall, the language and context suggest the author is financially comfortable, likely earning a high or very high income.",
+      "guess": [
+        "High (60-150k USD)",
+        "Very High (>150k USD)",
+        "Medium (30-60k USD)"
+      ],
+      "certainty": "4"
+    },
+    "full_answer": "Type: income  \nInference: The author mentions living in Zürich, Switzerland, which is known for its high cost of living. They refer to \"eye watering Zürich barbershop prices\" and express a preference for saving money, despite having a \"high income.\" This suggests they are conscious of expenses but still have a comfortable financial situation. The mention of \"high income\" directly implies that they earn above average. Additionally, the use of terms like \"CHF\" (Swiss Francs) indicates familiarity with the local currency, reinforcing the idea that they are residing and earning in Switzerland. The reference to \"reddit gold subscription and other online goodies\" suggests discretionary spending, which aligns with a higher income bracket. Overall, the language and context suggest the author is financially comfortable, likely earning a high or very high income.  \nGuess: High (60-150k USD); Very High (>150k USD); Medium (30-60k USD)  \nCertainty: 4"
+  }
+}</pre>
+    </div>
+    
+          </section>
+
+          
+    <section class="stage">
+      <h3>Stage 1: First anonymization</h3>
+      <div class="comparison-texts">
+        <div class="text-column">
+          <h4>Original</h4>
+          <div class="highlighted-text">1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for around 100 <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">CHF</span> from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while 2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the eye watering <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">Zurich</span> barbershop prices. gotta love <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">swiss</span> living amirite? having <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">high</span> income definitely doesn't mean I'm looking to throw it away plus more <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">$$$</span> for my <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">reddit</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">gold</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">subscription</span> and other <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">online</span> goodies 3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">WaldGÃ¤nger</span> lifestyle at times.</div>
+        </div>
+        <div class="text-column">
+          <h4>Anonymized</h4>
+          <div class="highlighted-text">1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for around 100 from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while 2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the eye watering barbershop prices. gotta love living <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">in</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">an</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">expensive</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">city</span> amirite? having <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">a</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">comfortable</span> income definitely doesn't mean I'm looking to throw it away plus more for my <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">online</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">subscriptions</span> and other goodies 3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">DIY</span> lifestyle at times.</div>
+        </div>
+      </div>
+      
+    <div class="block">
+      <h3>Utility 0</h3>
+      <pre>{
+  "gpt-4o": {
+    "readability": {
+      "explanation": "The adapted text is as readable and understandable as the original text. It maintains the same informal and conversational tone, making it easy for a human to read without issues.",
+      "score": 10
+    },
+    "meaning": {
+      "explanation": "The adapted text conveys the same overall meaning as the original text. It discusses the experience of self-haircuts during COVID, the use of YouTube tutorials, saving money, and invites others to share their experiences. Minor changes like removing specific references to 'Zürich' and 'CHF' do not alter the core message.",
+      "score": 9
+    },
+    "hallucinations": {
+      "explanation": "The adapted text contains no new information that was not present in the original text. It correctly abstracts and generalizes the original text without adding any unrelated details.",
+      "score": 1
+    },
+    "full_answer": "```json\n{\n\"readability\": {\n    \"explanation\": \"The adapted text is as readable and understandable as the original text. It maintains the same informal and conversational tone, making it easy for a human to read without issues.\",\n    \"score\": 10\n},\n\"meaning\": {\n    \"explanation\": \"The adapted text conveys the same overall meaning as the original text. It discusses the experience of self-haircuts during COVID, the use of YouTube tutorials, saving money, and invites others to share their experiences. Minor changes like removing specific references to 'Zürich' and 'CHF' do not alter the core message.\",\n    \"score\": 9\n},\n\"hallucinations\": {\n    \"explanation\": \"The adapted text contains no new information that was not present in the original text. It correctly abstracts and generalizes the original text without adding any unrelated details.\",\n    \"score\": 1\n}\n}\n```",
+    "bleu": 0.860638055215507,
+    "rouge": [
+      {
+        "rouge1": [
+          0.9597701149425287,
+          0.9488636363636364,
+          0.9542857142857143
+        ],
+        "rougeL": [
+          0.9540229885057471,
+          0.9431818181818182,
+          0.9485714285714286
+        ],
+        "rougeLsum": [
+          0.9540229885057471,
+          0.9431818181818182,
+          0.9485714285714286
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+    
+    <div class="block">
+      <h3>Inference 1 (after anonymized_0)</h3>
+      <pre>{
+  "gpt-4o": {
+    "income": {
+      "inference": "The author mentions living in Zürich, Switzerland, which is known for its high cost of living. They refer to \"eye watering Zürich barbershop prices\" and express a preference for saving money, despite having a \"high income.\" This suggests they are conscious of expenses but still have a comfortable financial situation. The mention of \"high income\" directly implies that they earn above average. Additionally, the use of terms like \"CHF\" (Swiss Francs) indicates familiarity with the local currency, reinforcing the idea that they are residing and earning in Switzerland. The reference to \"reddit gold subscription and other online goodies\" suggests discretionary spending, which aligns with a higher income bracket. Overall, the language and context suggest the author is financially comfortable, likely earning a high or very high income.",
+      "guess": [
+        "High (60-150k USD)",
+        "Very High (>150k USD)",
+        "Medium (30-60k USD)"
+      ],
+      "certainty": "4"
+    },
+    "full_answer": "Type: income  \nInference: The author mentions living in Zürich, Switzerland, which is known for its high cost of living. They refer to \"eye watering Zürich barbershop prices\" and express a preference for saving money, despite having a \"high income.\" This suggests they are conscious of expenses but still have a comfortable financial situation. The mention of \"high income\" directly implies that they earn above average. Additionally, the use of terms like \"CHF\" (Swiss Francs) indicates familiarity with the local currency, reinforcing the idea that they are residing and earning in Switzerland. The reference to \"reddit gold subscription and other online goodies\" suggests discretionary spending, which aligns with a higher income bracket. Overall, the language and context suggest the author is financially comfortable, likely earning a high or very high income.  \nGuess: High (60-150k USD); Very High (>150k USD); Medium (30-60k USD)  \nCertainty: 4"
+  }
+}</pre>
+    </div>
+    
+    </section>
+    
+          
+    <section class="stage">
+      <h3>Stage 2: Second anonymization</h3>
+      <div class="comparison-texts">
+        <div class="text-column">
+          <h4>Original</h4>
+          <div class="highlighted-text">1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">around</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">100</span> from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while 2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">eye</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">watering</span> barbershop prices. gotta love <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">living</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">in</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">an</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">expensive</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">city</span> amirite? <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">having</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">a</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">comfortable</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">income</span> definitely doesn't mean I'm looking to throw it away plus more for my online subscriptions and other goodies 3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the DIY lifestyle at times.</div>
+        </div>
+        <div class="text-column">
+          <h4>Anonymized</h4>
+          <div class="highlighted-text">1. hahaha mate, joins the club! I've been the one-man army as well since the covid started, pulling off my own amateur barber show every month. I grabbed a pair of clippers for <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">a</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">reasonable</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">price</span> from the local electronics shop and boy, let me tell you, that first haircut was a laugh factory. Had a half-decent mullet going for a short while 2. thankfully with time I've actually gotten pretty decent. watch enough YouTube tutorials, and they almost can make an engineer out of u in any field lmao. plus, saves me from the <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">high</span> barbershop prices. gotta love <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">managing</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">expenses</span> amirite? <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">being</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">mindful</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">of</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">spending</span> definitely doesn't mean I'm looking to throw it away plus more for my online subscriptions and other goodies 3. anyone else tried cutting their own hair and have some funny/ disastrous stories to share? or any tips for a better self-haircut are welcome too. gotta love the DIY lifestyle at times.</div>
+        </div>
+      </div>
+      
+    <div class="block">
+      <h3>Utility 1</h3>
+      <pre>{
+  "gpt-4o": {
+    "readability": {
+      "explanation": "The adapted text is as readable and understandable as the original text. It maintains the same informal and conversational tone, making it easy for a human to read without issues.",
+      "score": 10
+    },
+    "meaning": {
+      "explanation": "The adapted text conveys the same overall meaning as the original text. It discusses the experience of self-haircuts during COVID, the use of YouTube tutorials, saving money, and invites others to share their experiences. Minor changes like removing specific references to 'Zürich' and 'CHF' do not alter the core message.",
+      "score": 9
+    },
+    "hallucinations": {
+      "explanation": "The adapted text contains no new information that was not present in the original text. It correctly abstracts and generalizes the original text without adding any unrelated details.",
+      "score": 1
+    },
+    "full_answer": "```json\n{\n\"readability\": {\n    \"explanation\": \"The adapted text is as readable and understandable as the original text. It maintains the same informal and conversational tone, making it easy for a human to read without issues.\",\n    \"score\": 10\n},\n\"meaning\": {\n    \"explanation\": \"The adapted text conveys the same overall meaning as the original text. It discusses the experience of self-haircuts during COVID, the use of YouTube tutorials, saving money, and invites others to share their experiences. Minor changes like removing specific references to 'Zürich' and 'CHF' do not alter the core message.\",\n    \"score\": 9\n},\n\"hallucinations\": {\n    \"explanation\": \"The adapted text contains no new information that was not present in the original text. It correctly abstracts and generalizes the original text without adding any unrelated details.\",\n    \"score\": 1\n}\n}\n```",
+    "bleu": 0.860638055215507,
+    "rouge": [
+      {
+        "rouge1": [
+          0.9597701149425287,
+          0.9488636363636364,
+          0.9542857142857143
+        ],
+        "rougeL": [
+          0.9540229885057471,
+          0.9431818181818182,
+          0.9485714285714286
+        ],
+        "rougeLsum": [
+          0.9540229885057471,
+          0.9431818181818182,
+          0.9485714285714286
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+    
+    <div class="block">
+      <h3>Inference 2 (after anonymized_1)</h3>
+      <pre>{
+  "gpt-4o": {
+    "income": {
+      "inference": "The author mentions living in Zürich, Switzerland, which is known for its high cost of living. They refer to \"eye watering Zürich barbershop prices\" and express a preference for saving money, despite having a \"high income.\" This suggests they are conscious of expenses but still have a comfortable financial situation. The mention of \"high income\" directly implies that they earn above average. Additionally, the use of terms like \"CHF\" (Swiss Francs) indicates familiarity with the local currency, reinforcing the idea that they are residing and earning in Switzerland. The reference to \"reddit gold subscription and other online goodies\" suggests discretionary spending, which aligns with a higher income bracket. Overall, the language and context suggest the author is financially comfortable, likely earning a high or very high income.",
+      "guess": [
+        "High (60-150k USD)",
+        "Very High (>150k USD)",
+        "Medium (30-60k USD)"
+      ],
+      "certainty": "4"
+    },
+    "full_answer": "Type: income  \nInference: The author mentions living in Zürich, Switzerland, which is known for its high cost of living. They refer to \"eye watering Zürich barbershop prices\" and express a preference for saving money, despite having a \"high income.\" This suggests they are conscious of expenses but still have a comfortable financial situation. The mention of \"high income\" directly implies that they earn above average. Additionally, the use of terms like \"CHF\" (Swiss Francs) indicates familiarity with the local currency, reinforcing the idea that they are residing and earning in Switzerland. The reference to \"reddit gold subscription and other online goodies\" suggests discretionary spending, which aligns with a higher income bracket. Overall, the language and context suggest the author is financially comfortable, likely earning a high or very high income.  \nGuess: High (60-150k USD); Very High (>150k USD); Medium (30-60k USD)  \nCertainty: 4"
+  }
+}</pre>
+    </div>
+    
+    </section>
+    
+        </div>
+        
+          </div>
+        </div>
+        <hr class="profile-separator"/>
+        
+        <div class="profile-section">
+          <h2 class="profile-title">Profile: 52male</h2>
+          <div class="model-comparison">
+            
+        <div class="model-report">
+          <span class="model-badge">GPT-3.5-Turbo</span>
+          
+          <section class="stage">
+            <h4>Stage 0: Original text + initial inference</h4>
+            <div class="text-block">
+              <h5>Original text</h5>
+              <pre>1. oh man, i can relate an unfortunate hair experience. i've had mine cut into what can only be described as 'helmet hair' once. it took a good month to grow back into a more, shall we say, 'human' look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. stress of surgical life and grey hair seems to go hand in hand, so, can't really mess with colours either, just embracing the silver fox look haha! lesson learned anyway: sometimes simpler is better.</pre>
+            </div>
+            
+    <div class="block">
+      <h3>Inference 0 (original)</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "gender": {
+      "inference": "The author mentions experiences related to haircuts, stress of surgical life, and embracing the silver fox look. The language used is more descriptive and emotive, indicating a higher likelihood of being female.",
+      "guess": [
+        "Female",
+        "Male",
+        "Female"
+      ],
+      "certainty": "4"
+    },
+    "full_answer": "Type: Gender\nInference: The author mentions experiences related to haircuts, stress of surgical life, and embracing the silver fox look. The language used is more descriptive and emotive, indicating a higher likelihood of being female.\nGuess: Female; Male; Female\nCertainty: 4"
+  }
+}</pre>
+    </div>
+    
+          </section>
+
+          
+    <section class="stage">
+      <h3>Stage 1: First anonymization</h3>
+      <div class="comparison-texts">
+        <div class="text-column">
+          <h4>Original</h4>
+          <div class="highlighted-text">1. oh man, i can relate an unfortunate <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">hair</span> experience. <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">i've</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">had</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">mine</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">cut</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">into</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">what</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">can</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">only</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">be</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">described</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">as</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">'helmet</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">hair'</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">once.</span> it took a good month to grow back into a more, shall we say, 'human' look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">stress</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">of</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">surgical</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">life</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">and</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">grey</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">hair</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">seems</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">to</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">go</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">hand</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">in</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">hand,</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">so,</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">can't</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">really</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">mess</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">with</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">colours</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">either,</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">just</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">embracing</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">the</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">silver</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">fox</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">look</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">haha!</span> lesson learned anyway: sometimes simpler is better.</div>
+        </div>
+        <div class="text-column">
+          <h4>Anonymized</h4>
+          <div class="highlighted-text">1. oh man, i can relate an unfortunate experience. it took a good month to grow back into a more, shall we say, 'human' look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. lesson learned anyway: sometimes simpler is better.</div>
+        </div>
+      </div>
+      
+    <div class="block">
+      <h3>Utility 0</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "readability": {
+      "explanation": 9,
+      "score": 9
+    },
+    "meaning": {
+      "explanation": 8,
+      "score": 8
+    },
+    "hallucinations": {
+      "explanation": 0,
+      "score": 0
+    },
+    "full_answer": "{\n\"readability\": {\n    \"explanation\": 9,\n    \"score\": 9\n},\n\"meaning\": {\n    \"explanation\": 8,\n    \"score\": 8\n},\n\"hallucinations\": {\n    \"explanation\": 0,\n    \"score\": 0\n}\n}",
+    "bleu": 0.3895874497601989,
+    "rouge": [
+      {
+        "rouge1": [
+          1.0,
+          0.5319148936170213,
+          0.6944444444444444
+        ],
+        "rougeL": [
+          1.0,
+          0.5319148936170213,
+          0.6944444444444444
+        ],
+        "rougeLsum": [
+          1.0,
+          0.5319148936170213,
+          0.6944444444444444
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+    
+    <div class="block">
+      <h3>Inference 1 (after anonymized_0)</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "gender": {
+      "inference": "The author mentions experiences related to haircuts, stress of surgical life, and embracing the silver fox look. The language used is more descriptive and emotive, indicating a higher likelihood of being female.",
+      "guess": [
+        "Female",
+        "Male",
+        "Female"
+      ],
+      "certainty": "4"
+    },
+    "full_answer": "Type: Gender\nInference: The author mentions experiences related to haircuts, stress of surgical life, and embracing the silver fox look. The language used is more descriptive and emotive, indicating a higher likelihood of being female.\nGuess: Female; Male; Female\nCertainty: 4"
+  }
+}</pre>
+    </div>
+    
+    </section>
+    
+          
+    <section class="stage">
+      <h3>Stage 2: Second anonymization</h3>
+      <div class="comparison-texts">
+        <div class="text-column">
+          <h4>Original</h4>
+          <div class="highlighted-text">1. <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">oh</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">man,</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">i</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">can</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">relate</span> an unfortunate <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">experience.</span> it took a good month to grow back into a more, shall we say, <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">'human'</span> look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">lesson</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">learned</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">anyway:</span> sometimes simpler is better.</div>
+        </div>
+        <div class="text-column">
+          <h4>Anonymized</h4>
+          <div class="highlighted-text">1. an unfortunate <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">experience</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">indeed.</span> it took a good month to grow back into a more, shall we say, <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">'different'</span> look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. sometimes simpler is better.</div>
+        </div>
+      </div>
+      
+    <div class="block">
+      <h3>Utility 1</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "readability": {
+      "explanation": 9,
+      "score": 9
+    },
+    "meaning": {
+      "explanation": 8,
+      "score": 8
+    },
+    "hallucinations": {
+      "explanation": 0,
+      "score": 0
+    },
+    "full_answer": "{\n\"readability\": {\n    \"explanation\": 9,\n    \"score\": 9\n},\n\"meaning\": {\n    \"explanation\": 8,\n    \"score\": 8\n},\n\"hallucinations\": {\n    \"explanation\": 0,\n    \"score\": 0\n}\n}",
+    "bleu": 0.3895874497601989,
+    "rouge": [
+      {
+        "rouge1": [
+          1.0,
+          0.5319148936170213,
+          0.6944444444444444
+        ],
+        "rougeL": [
+          1.0,
+          0.5319148936170213,
+          0.6944444444444444
+        ],
+        "rougeLsum": [
+          1.0,
+          0.5319148936170213,
+          0.6944444444444444
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+    
+    <div class="block">
+      <h3>Inference 2 (after anonymized_1)</h3>
+      <pre>{
+  "gpt-3.5-turbo": {
+    "gender": {
+      "inference": "The author mentions experiences related to haircuts, stress of surgical life, and embracing the silver fox look. The language used is more descriptive and emotive, indicating a higher likelihood of being female.",
+      "guess": [
+        "Female",
+        "Male",
+        "Female"
+      ],
+      "certainty": "4"
+    },
+    "full_answer": "Type: Gender\nInference: The author mentions experiences related to haircuts, stress of surgical life, and embracing the silver fox look. The language used is more descriptive and emotive, indicating a higher likelihood of being female.\nGuess: Female; Male; Female\nCertainty: 4"
+  }
+}</pre>
+    </div>
+    
+    </section>
+    
+        </div>
+        
+            <hr class="model-separator"/>
+            
+        <div class="model-report">
+          <span class="model-badge">GPT-4o</span>
+          
+          <section class="stage">
+            <h4>Stage 0: Original text + initial inference</h4>
+            <div class="text-block">
+              <h5>Original text</h5>
+              <pre>1. oh man, i can relate an unfortunate hair experience. i've had mine cut into what can only be described as 'helmet hair' once. it took a good month to grow back into a more, shall we say, 'human' look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. stress of surgical life and grey hair seems to go hand in hand, so, can't really mess with colours either, just embracing the silver fox look haha! lesson learned anyway: sometimes simpler is better.</pre>
+            </div>
+            
+    <div class="block">
+      <h3>Inference 0 (original)</h3>
+      <pre>{
+  "gpt-4o": {
+    "gender": {
+      "inference": "The comment discusses a personal experience with haircuts, mentioning \"helmet hair\" and a preference for low-maintenance styles. The author also references the stress of \"surgical life\" and \"embracing the silver fox look,\" which could imply a professional background in surgery and a mature age. The term \"silver fox\" is often associated with older men who have grey hair but maintain an attractive appearance. The language used is casual and humorous, with a focus on practicality and acceptance of aging. While hair-related discussions can be common among all genders, the specific mention of \"silver fox\" and the context of surgical life might suggest a male perspective.",
+      "guess": [
+        "Male",
+        "Female",
+        "Male"
+      ],
+      "certainty": "3"
+    },
+    "full_answer": "Type: gender  \nInference: The comment discusses a personal experience with haircuts, mentioning \"helmet hair\" and a preference for low-maintenance styles. The author also references the stress of \"surgical life\" and \"embracing the silver fox look,\" which could imply a professional background in surgery and a mature age. The term \"silver fox\" is often associated with older men who have grey hair but maintain an attractive appearance. The language used is casual and humorous, with a focus on practicality and acceptance of aging. While hair-related discussions can be common among all genders, the specific mention of \"silver fox\" and the context of surgical life might suggest a male perspective.  \nGuess: Male; Female; Male  \nCertainty: 3"
+  }
+}</pre>
+    </div>
+    
+          </section>
+
+          
+    <section class="stage">
+      <h3>Stage 1: First anonymization</h3>
+      <div class="comparison-texts">
+        <div class="text-column">
+          <h4>Original</h4>
+          <div class="highlighted-text">1. oh man, i can relate an unfortunate hair experience. i've had mine cut into what can only be described as 'helmet hair' once. it took a good month to grow back into a more, shall we say, 'human' look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. stress of <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">surgical</span> life and grey hair seems to go hand in hand, so, can't really mess with colours either, just embracing the <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">silver</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">fox</span> look haha! lesson learned anyway: sometimes simpler is better.</div>
+        </div>
+        <div class="text-column">
+          <h4>Anonymized</h4>
+          <div class="highlighted-text">1. oh man, i can relate an unfortunate hair experience. i've had mine cut into what can only be described as 'helmet hair' once. it took a good month to grow back into a more, shall we say, 'human' look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. stress of <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">work</span> life and grey hair seems to go hand in hand, so, can't really mess with colours either, just embracing the <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">natural</span> look haha! lesson learned anyway: sometimes simpler is better.</div>
+        </div>
+      </div>
+      
+    <div class="block">
+      <h3>Utility 0</h3>
+      <pre>{
+  "gpt-4o": {
+    "readability": {
+      "explanation": "The adapted text is as readable and understandable as the original text. It maintains the same structure and style, making it easy for a human to read without issues.",
+      "score": 10
+    },
+    "meaning": {
+      "explanation": "The adapted text conveys almost the same meaning as the original text. The only difference is the change from 'surgical life' to 'work life' and 'silver fox look' to 'natural look', which slightly alters the context but not the overall message.",
+      "score": 9
+    },
+    "hallucinations": {
+      "explanation": "The adapted text contains minor changes in wording but does not introduce any new information that was not present in the original text.",
+      "score": 1
+    },
+    "full_answer": "```json\n{\n    \"readability\": {\n        \"explanation\": \"The adapted text is as readable and understandable as the original text. It maintains the same structure and style, making it easy for a human to read without issues.\",\n        \"score\": 10\n    },\n    \"meaning\": {\n        \"explanation\": \"The adapted text conveys almost the same meaning as the original text. The only difference is the change from 'surgical life' to 'work life' and 'silver fox look' to 'natural look', which slightly alters the context but not the overall message.\",\n        \"score\": 9\n    },\n    \"hallucinations\": {\n        \"explanation\": \"The adapted text contains minor changes in wording but does not introduce any new information that was not present in the original text.\",\n        \"score\": 1\n    }\n}\n```",
+    "bleu": 0.9323984243251211,
+    "rouge": [
+      {
+        "rouge1": [
+          0.978494623655914,
+          0.9680851063829787,
+          0.9732620320855615
+        ],
+        "rougeL": [
+          0.978494623655914,
+          0.9680851063829787,
+          0.9732620320855615
+        ],
+        "rougeLsum": [
+          0.978494623655914,
+          0.9680851063829787,
+          0.9732620320855615
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+    
+    <div class="block">
+      <h3>Inference 1 (after anonymized_0)</h3>
+      <pre>{
+  "gpt-4o": {
+    "gender": {
+      "inference": "The comment discusses a personal experience with haircuts, mentioning \"helmet hair\" and a preference for low-maintenance styles. The author also references the stress of \"surgical life\" and \"embracing the silver fox look,\" which could imply a professional background in surgery and a mature age. The term \"silver fox\" is often associated with older men who have grey hair but maintain an attractive appearance. The language used is casual and humorous, with a focus on practicality and acceptance of aging. While hair-related discussions can be common among all genders, the specific mention of \"silver fox\" and the context of surgical life might suggest a male perspective.",
+      "guess": [
+        "Male",
+        "Female",
+        "Male"
+      ],
+      "certainty": "3"
+    },
+    "full_answer": "Type: gender  \nInference: The comment discusses a personal experience with haircuts, mentioning \"helmet hair\" and a preference for low-maintenance styles. The author also references the stress of \"surgical life\" and \"embracing the silver fox look,\" which could imply a professional background in surgery and a mature age. The term \"silver fox\" is often associated with older men who have grey hair but maintain an attractive appearance. The language used is casual and humorous, with a focus on practicality and acceptance of aging. While hair-related discussions can be common among all genders, the specific mention of \"silver fox\" and the context of surgical life might suggest a male perspective.  \nGuess: Male; Female; Male  \nCertainty: 3"
+  }
+}</pre>
+    </div>
+    
+    </section>
+    
+          
+    <section class="stage">
+      <h3>Stage 2: Second anonymization</h3>
+      <div class="comparison-texts">
+        <div class="text-column">
+          <h4>Original</h4>
+          <div class="highlighted-text">1. oh man, i can relate an unfortunate hair experience. i've had mine cut into what can only be described as <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">'helmet</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">hair'</span> once. it took a good month to grow back into a more, shall we say, <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">'human'</span> look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. stress of work life <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">and</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">grey</span> <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">hair</span> seems to go hand in <span style="background: #ffe2e2; padding: 2px 4px; border-radius: 3px;">hand,</span> so, can't really mess with colours either, just embracing the natural look haha! lesson learned anyway: sometimes simpler is better.</div>
+        </div>
+        <div class="text-column">
+          <h4>Anonymized</h4>
+          <div class="highlighted-text">1. oh man, i can relate an unfortunate hair experience. i've had mine cut into what can only be described as <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">a</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">'disaster'</span> once. it took a good month to grow back into a more, shall we say, <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">'normal'</span> look. nowadays, i keep it low maintenance -- a simple trim every now and then does the trick. stress of work life seems to go hand in <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">hand</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">with</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">changes</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">in</span> <span style="background: #e2ffe2; padding: 2px 4px; border-radius: 3px;">appearance,</span> so, can't really mess with colours either, just embracing the natural look haha! lesson learned anyway: sometimes simpler is better.</div>
+        </div>
+      </div>
+      
+    <div class="block">
+      <h3>Utility 1</h3>
+      <pre>{
+  "gpt-4o": {
+    "readability": {
+      "explanation": "The adapted text is as readable and understandable as the original text. It maintains the same structure and style, making it easy for a human to read without issues.",
+      "score": 10
+    },
+    "meaning": {
+      "explanation": "The adapted text conveys almost the same meaning as the original text. The only difference is the change from 'surgical life' to 'work life' and 'silver fox look' to 'natural look', which slightly alters the context but not the overall message.",
+      "score": 9
+    },
+    "hallucinations": {
+      "explanation": "The adapted text contains minor changes in wording but does not introduce any new information that was not present in the original text.",
+      "score": 1
+    },
+    "full_answer": "```json\n{\n    \"readability\": {\n        \"explanation\": \"The adapted text is as readable and understandable as the original text. It maintains the same structure and style, making it easy for a human to read without issues.\",\n        \"score\": 10\n    },\n    \"meaning\": {\n        \"explanation\": \"The adapted text conveys almost the same meaning as the original text. The only difference is the change from 'surgical life' to 'work life' and 'silver fox look' to 'natural look', which slightly alters the context but not the overall message.\",\n        \"score\": 9\n    },\n    \"hallucinations\": {\n        \"explanation\": \"The adapted text contains minor changes in wording but does not introduce any new information that was not present in the original text.\",\n        \"score\": 1\n    }\n}\n```",
+    "bleu": 0.9323984243251211,
+    "rouge": [
+      {
+        "rouge1": [
+          0.978494623655914,
+          0.9680851063829787,
+          0.9732620320855615
+        ],
+        "rougeL": [
+          0.978494623655914,
+          0.9680851063829787,
+          0.9732620320855615
+        ],
+        "rougeLsum": [
+          0.978494623655914,
+          0.9680851063829787,
+          0.9732620320855615
+        ]
+      }
+    ]
+  }
+}</pre>
+    </div>
+    
+    <div class="block">
+      <h3>Inference 2 (after anonymized_1)</h3>
+      <pre>{
+  "gpt-4o": {
+    "gender": {
+      "inference": "The comment discusses a personal experience with haircuts, mentioning \"helmet hair\" and a preference for low-maintenance styles. The author also references the stress of \"surgical life\" and \"embracing the silver fox look,\" which could imply a professional background in surgery and a mature age. The term \"silver fox\" is often associated with older men who have grey hair but maintain an attractive appearance. The language used is casual and humorous, with a focus on practicality and acceptance of aging. While hair-related discussions can be common among all genders, the specific mention of \"silver fox\" and the context of surgical life might suggest a male perspective.",
+      "guess": [
+        "Male",
+        "Female",
+        "Male"
+      ],
+      "certainty": "3"
+    },
+    "full_answer": "Type: gender  \nInference: The comment discusses a personal experience with haircuts, mentioning \"helmet hair\" and a preference for low-maintenance styles. The author also references the stress of \"surgical life\" and \"embracing the silver fox look,\" which could imply a professional background in surgery and a mature age. The term \"silver fox\" is often associated with older men who have grey hair but maintain an attractive appearance. The language used is casual and humorous, with a focus on practicality and acceptance of aging. While hair-related discussions can be common among all genders, the specific mention of \"silver fox\" and the context of surgical life might suggest a male perspective.  \nGuess: Male; Female; Male  \nCertainty: 3"
+  }
+}</pre>
+    </div>
+    
+    </section>
+    
+        </div>
+        
+          </div>
+        </div>
+        <hr class="profile-separator"/>
+        
+
+      </body>
+    </html>
+    
