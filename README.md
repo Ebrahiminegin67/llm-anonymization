@@ -1,6 +1,6 @@
 # My Project Notes
 
-This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesis.
+This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesis. This project uses LLMs to anonymize Reddit comments while preserving text utility.
 I am currently studying the codebase and understanding how the anonymization pipeline works before making changes to the dataset and running further experiments.
 
 ## What I have done so far
