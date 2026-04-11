@@ -6,7 +6,7 @@ I am currently studying the codebase and understanding how the anonymization pip
 ## What I have done so far
 - Set up the environment and ran the existing code
 - Explored the anonymization pipeline and prompt engineering strategies
-- Generated the anonymization report (see `anonymization_report.html`)
+- Generated the anonymization report (see [anonymization_report.html](https://ebrahiminegin67.github.io/llm-anonymization/anonymization_report.html))
 
 ## Next steps
 - Change the dataset and explore different configurations
