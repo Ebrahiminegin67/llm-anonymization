@@ -1,0 +1,11 @@
+# TAB anonymization config
+model:
+  name: "gpt-4o"
+  provider: "openai"
+  temperature: 0.1
+
+split: "test"
+max_docs: 10
+prompt_level: 3
+data_dir: "data/tab"
+output_dir: "anonymized_results/tab"

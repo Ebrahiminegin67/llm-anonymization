@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>TAB Anonymization — LLM Adaptation Report</title>
+  <style>
+    :root {
+      --primary: #2a4d69;
+      --accent: #4b86b4;
+      --light-accent: #adcbe3;
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --code-bg: #f4f4f4;
+      --border: #dee2e6;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: #333;
+      line-height: 1.7;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 30px 24px; }
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white; padding: 50px 24px; text-align: center;
+    }
+    .header h1 { margin: 0 0 10px; font-size: 2.4em; font-weight: 700; }
+    .header p { margin: 0; font-size: 1.15em; opacity: 0.9; }
+    .header .subtitle { margin-top: 12px; font-size: 0.95em; opacity: 0.75; }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .card h2 {
+      color: var(--primary);
+      margin-top: 0;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--light-accent);
+      font-size: 1.5em;
+    }
+    .card h3 { color: var(--accent); margin-top: 24px; }
+    .card h4 { color: var(--accent); }
+    pre {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      padding: 18px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.88em;
+      line-height: 1.6;
+    }
+    code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.9em;
+    }
+    pre code { background: none; padding: 0; }
+    .kw { color: #cba6f7; }
+    .fn { color: #89b4fa; }
+    .st { color: #a6e3a1; }
+    .cm { color: #6c7086; font-style: italic; }
+    .nb { color: #fab387; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.95em;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+    tr:nth-child(even) { background: #f8f9fa; }
+    tr:hover { background: #e9ecef; }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.82em;
+      font-weight: 600;
+      color: white;
+    }
+    .badge-primary { background: var(--accent); }
+    .badge-success { background: var(--success); }
+    .badge-warning { background: var(--warning); color: #333; }
+    .badge-danger { background: var(--danger); }
+    .info-box {
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin: 16px 0;
+      border-left: 4px solid;
+    }
+    .info-box.blue { background: #e7f1ff; border-color: var(--accent); }
+    .info-box.green { background: #e6f9e6; border-color: var(--success); }
+    .info-box.yellow { background: #fff9e6; border-color: var(--warning); }
+    .info-box.red { background: #ffe6e6; border-color: var(--danger); }
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 24px 0;
+    }
+    .flow-step {
+      background: var(--accent);
+      color: white;
+      padding: 14px 20px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.92em;
+      min-width: 130px;
+    }
+    .flow-arrow {
+      font-size: 1.5em;
+      color: var(--accent);
+      padding: 0 6px;
+    }
+    .flow-step.highlight {
+      background: var(--primary);
+      box-shadow: 0 3px 12px rgba(42,77,105,0.3);
+    }
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 20px 0;
+    }
+    .comparison > div {
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .comparison .left { background: #fff0f0; border-color: #f5c6cb; }
+    .comparison .right { background: #f0fff0; border-color: #c3e6cb; }
+    .comparison h4 { margin-top: 0; }
+    .hl-person { background: #ffd6d6; padding: 1px 4px; border-radius: 3px; }
+    .hl-loc { background: #d6e8ff; padding: 1px 4px; border-radius: 3px; }
+    .hl-org { background: #fff3d6; padding: 1px 4px; border-radius: 3px; }
+    .hl-date { background: #d6ffd6; padding: 1px 4px; border-radius: 3px; }
+    .hl-code { background: #e8d6ff; padding: 1px 4px; border-radius: 3px; }
+    .placeholder { font-weight: bold; color: var(--danger); }
+    .file-tree {
+      font-family: 'Cascadia Code', monospace;
+      font-size: 0.88em;
+      line-height: 1.8;
+      background: #1e1e2e;
+      color: #cdd6f4;
+      padding: 18px;
+      border-radius: 8px;
+    }
+    .file-tree .folder { color: #89b4fa; }
+    .file-tree .file { color: #a6e3a1; }
+    .file-tree .new { color: #f38ba8; font-weight: bold; }
+    .section-num {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 32px;
+      font-weight: 700;
+      font-size: 0.9em;
+      margin-right: 10px;
+    }
+    .toc {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+    }
+    .toc h3 { margin-top: 0; color: var(--primary); }
+    .toc ol { margin: 0; padding-left: 24px; }
+    .toc li { margin: 6px 0; }
+    .toc a { color: var(--accent); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .footer {
+      text-align: center;
+      padding: 30px;
+      color: #888;
+      font-size: 0.9em;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    @media (max-width: 768px) {
+      .comparison { grid-template-columns: 1fr; }
+      .flow { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>LLM Anonymization on the TAB Dataset</h1>
+  <p>Adapting "Large Language Models are Advanced Anonymizers" (ICLR 2025) to the Text Anonymization Benchmark</p>
+  <div class="subtitle">Project Report &mdash; April 2026</div>
+</div>
+
+<div class="container">
+
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#background">Background &amp; Motivation</a></li>
+    <li><a href="#original">The Original Project</a></li>
+    <li><a href="#tab-dataset">The TAB Dataset</a></li>
+    <li><a href="#adaptation">How We Adapted the Pipeline</a></li>
+    <li><a href="#architecture">Architecture &amp; Code Structure</a></li>
+    <li><a href="#prompts">Prompt Engineering (3 Levels)</a></li>
+    <li><a href="#evaluation">Evaluation Metrics</a></li>
+    <li><a href="#example">Worked Example</a></li>
+    <li><a href="#howto">How to Run</a></li>
+    <li><a href="#summary">Summary</a></li>
+  </ol>
+</div>
+
+<!-- 1. BACKGROUND -->
+<div class="card" id="background">
+  <h2><span class="section-num">1</span> Background &amp; Motivation</h2>
+  <p>
+    Text anonymization is a critical task in NLP and privacy engineering. The goal is to remove or replace
+    <strong>personally identifiable information (PII)</strong> from text while preserving the document's
+    meaning and utility.
+  </p>
+  <p>
+    Recent research has shown that <strong>Large Language Models (LLMs)</strong> like GPT-4 are surprisingly
+    effective at this task — sometimes outperforming traditional rule-based and NER-based approaches.
+  </p>
+  <div class="info-box blue">
+    <strong>Our Goal:</strong> Take an existing LLM anonymization system designed for Reddit comments
+    and adapt it to work on the <strong>TAB (Text Anonymization Benchmark)</strong> — a dataset of
+    European court case documents with gold-standard PII annotations.
+  </div>
+</div>
+
+<!-- 2. ORIGINAL PROJECT -->
+<div class="card" id="original">
+  <h2><span class="section-num">2</span> The Original Project</h2>
+  <p>
+    The base project implements the paper <em>"Large Language Models are Advanced Anonymizers"</em>
+    (Staab et al., ICLR 2025). It works on <strong>Reddit comments</strong> and performs
+    <strong>attribute-level anonymization</strong>.
+  </p>
+
+  <h3>Original Pipeline</h3>
+  <div class="flow">
+    <div class="flow-step">Reddit Comments</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">Infer Attributes<br><small>(age, gender, income...)</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">LLM Anonymization<br><small>(rewrite text)</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">Utility Scoring<br><small>(BLEU, ROUGE, LLM)</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">Eval Attack<br><small>(can attributes still<br>be inferred?)</small></div>
+  </div>
+
+  <h3>What It Does</h3>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>Input</td><td>Reddit user's comment history</td></tr>
+    <tr><td>PII Types</td><td>Age, gender, income, location, education, occupation, relationship status</td></tr>
+    <tr><td>Anonymization</td><td>LLM rewrites comments to prevent attribute inference (e.g., "Zürich" &rarr; "an expensive city")</td></tr>
+    <tr><td>Evaluation</td><td>Run inference attacks on anonymized text; if model can still guess attributes, anonymization failed</td></tr>
+    <tr><td>Key Insight</td><td>GPT-4 anonymization reduces correct attribute inference by ~60% while preserving text quality</td></tr>
+  </table>
+</div>
+
+<!-- 3. TAB DATASET -->
+<div class="card" id="tab-dataset">
+  <h2><span class="section-num">3</span> The TAB Dataset</h2>
+  <p>
+    The <strong>Text Anonymization Benchmark (TAB)</strong> is an open-source corpus developed by
+    Pilán et al. (2022) for evaluating text anonymization systems. It consists of
+    <strong>1,268 English-language court cases</strong> from the European Court of Human Rights (ECHR).
+  </p>
+
+  <h3>Dataset Structure</h3>
+  <table>
+    <tr><th>Split</th><th>Documents</th><th>Purpose</th></tr>
+    <tr><td>Train</td><td>~1,000</td><td>Training anonymization models</td></tr>
+    <tr><td>Dev</td><td>~70</td><td>Hyperparameter tuning</td></tr>
+    <tr><td>Test</td><td>127</td><td>Final evaluation</td></tr>
+  </table>
+
+  <h3>Entity Types Annotated</h3>
+  <table>
+    <tr><th>Type</th><th>Description</th><th>Example</th></tr>
+    <tr><td><span class="badge badge-danger">PERSON</span></td><td>Names of individuals</td><td><span class="hl-person">Mr Galip Yalman</span></td></tr>
+    <tr><td><span class="badge badge-primary">LOC</span></td><td>Locations</td><td><span class="hl-loc">Ankara</span>, <span class="hl-loc">Turkey</span></td></tr>
+    <tr><td><span class="badge badge-warning">ORG</span></td><td>Organizations</td><td><span class="hl-org">European Commission of Human Rights</span></td></tr>
+    <tr><td><span class="badge badge-success">DATETIME</span></td><td>Dates and times</td><td><span class="hl-date">15 March 1999</span></td></tr>
+    <tr><td><span class="badge badge-primary">CODE</span></td><td>Case/reference numbers</td><td><span class="hl-code">36110/97</span></td></tr>
+    <tr><td><span class="badge badge-warning">DEM</span></td><td>Demographic info</td><td>Turkish, Kurdish</td></tr>
+    <tr><td><span class="badge badge-success">QUANTITY</span></td><td>Amounts, numbers</td><td>EUR 5,000</td></tr>
+    <tr><td><span class="badge badge-primary">MISC</span></td><td>Other identifiers</td><td>Various</td></tr>
+  </table>
+
+  <h3>Annotation Labels</h3>
+  <div class="info-box yellow">
+    Each entity is labeled with an <strong>identifier type</strong> that indicates the masking decision:
+    <ul>
+      <li><strong>DIRECT</strong> — Uniquely identifies a person &rarr; <strong>must always be masked</strong></li>
+      <li><strong>QUASI</strong> — Could identify in combination &rarr; <strong>should be masked</strong></li>
+      <li><strong>NO_MASK</strong> — Not identifying &rarr; keep as is</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 4. ADAPTATION -->
+<div class="card" id="adaptation">
+  <h2><span class="section-num">4</span> How We Adapted the Pipeline</h2>
+  <p>
+    The original project does <strong>attribute-level</strong> anonymization on short Reddit comments.
+    TAB requires <strong>entity-level</strong> anonymization on long legal documents.
+    Here is how we bridged the gap:
+  </p>
+
+  <h3>Key Differences</h3>
+  <table>
+    <tr><th>Aspect</th><th>Original (Reddit)</th><th>TAB Adaptation (Court Cases)</th></tr>
+    <tr>
+      <td><strong>Input</strong></td>
+      <td>Short Reddit comments (~50–200 words)</td>
+      <td>Long court documents (~5,000 chars avg)</td>
+    </tr>
+    <tr>
+      <td><strong>PII Type</strong></td>
+      <td>Inferred attributes (age, gender...)</td>
+      <td>Named entities (PERSON, LOC, ORG...)</td>
+    </tr>
+    <tr>
+      <td><strong>PII Source</strong></td>
+      <td>LLM infers attributes from text</td>
+      <td>Gold annotations provided in dataset</td>
+    </tr>
+    <tr>
+      <td><strong>Anonymization</strong></td>
+      <td>Generalize text ("Zürich" &rarr; "expensive city")</td>
+      <td>Replace entities with placeholders ([PERSON], [LOC]...)</td>
+    </tr>
+    <tr>
+      <td><strong>Challenge</strong></td>
+      <td>Prevent attribute inference</td>
+      <td>Replace all PII while preserving legal reasoning</td>
+    </tr>
+    <tr>
+      <td><strong>Evaluation</strong></td>
+      <td>Adversarial inference attack</td>
+      <td>Entity recall/precision vs gold standard</td>
+    </tr>
+  </table>
+
+  <h3>New Pipeline</h3>
+  <div class="flow">
+    <div class="flow-step highlight">TAB Court<br>Document</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">Chunk<br>Document<br><small>(&le;3500 chars)</small></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">Feed Entities<br>+ Text to LLM</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step highlight">LLM Replaces<br>Entities with<br>Placeholders</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">Evaluate<br>Recall &amp;<br>Preservation</div>
+  </div>
+
+  <h3>What We Reused vs. What We Built New</h3>
+  <div class="comparison">
+    <div class="left">
+      <h4>&#9851; Reused from Original</h4>
+      <ul>
+        <li>OpenAI API integration (<code>openai.ChatCompletion</code>)</li>
+        <li>Prompt engineering philosophy (3 levels)</li>
+        <li>Config-driven YAML approach</li>
+        <li>Retry logic for API errors</li>
+        <li>Incremental JSONL output format</li>
+        <li>Response parsing with # separator</li>
+      </ul>
+    </div>
+    <div class="right">
+      <h4>&#127381; Built New for TAB</h4>
+      <ul>
+        <li>TAB data loader and parser</li>
+        <li>Document chunking (for long texts)</li>
+        <li>Entity-aware prompts (legal domain)</li>
+        <li>Entity-level evaluation metrics</li>
+        <li>Auto-download of TAB dataset</li>
+        <li>Resume support for long runs</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 5. ARCHITECTURE -->
+<div class="card" id="architecture">
+  <h2><span class="section-num">5</span> Architecture &amp; Code Structure</h2>
+
+  <h3>Files Created</h3>
+  <div class="file-tree">
+    <span class="folder">llm-anonymization/</span><br>
+    ├── <span class="new">run_tab.py</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&larr; Main self-contained runner (all-in-one)<br>
+    ├── <span class="folder">configs/anonymization/</span><br>
+    │&nbsp;&nbsp; └── <span class="new">tab.yaml</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&larr; Configuration file<br>
+    ├── <span class="folder">src/tab/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&larr; Module directory (NEW)<br>
+    │&nbsp;&nbsp; ├── <span class="new">__init__.py</span><br>
+    │&nbsp;&nbsp; ├── <span class="new">tab_loader.py</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&larr; TAB dataset parser &amp; downloader<br>
+    │&nbsp;&nbsp; ├── <span class="new">tab_anonymize.py</span>&nbsp;&nbsp;&larr; Anonymization pipeline<br>
+    │&nbsp;&nbsp; └── <span class="new">tab_evaluation.py</span>&nbsp;&larr; Evaluation metrics<br>
+    └── <span class="folder">data/tab/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&larr; Downloaded TAB data (auto)<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── echr_train.json<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── echr_dev.json<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└── echr_test.json<br>
+  </div>
+
+  <h3>Key Component: Data Loader</h3>
+  <p>The TAB dataset uses a specific JSON format where annotations are nested under annotator keys:</p>
+<pre><code><span class="cm">// TAB JSON structure</span>
+{
+  <span class="st">"doc_id"</span>: <span class="st">"001-61807"</span>,
+  <span class="st">"text"</span>: <span class="st">"PROCEDURE\nThe case originated..."</span>,
+  <span class="st">"annotations"</span>: {
+    <span class="st">"annotator1"</span>: {
+      <span class="st">"entity_mentions"</span>: [
+        {
+          <span class="st">"entity_type"</span>: <span class="st">"CODE"</span>,
+          <span class="st">"span_text"</span>: <span class="st">"36110/97"</span>,
+          <span class="st">"identifier_type"</span>: <span class="st">"DIRECT"</span>,
+          <span class="st">"start_offset"</span>: <span class="nb">54</span>,
+          <span class="st">"end_offset"</span>: <span class="nb">62</span>
+        }
+      ]
+    }
+  }
+}</code></pre>
+
+  <p>Our parser extracts all entity mentions from this nested structure:</p>
+<pre><code><span class="kw">def</span> <span class="fn">parse_document</span>(doc_json):
+    annotations = []
+    <span class="kw">for</span> ann_key, ann_data <span class="kw">in</span> doc_json[<span class="st">"annotations"</span>].items():
+        <span class="cm"># annotations → annotatorN → entity_mentions → [list]</span>
+        entity_mentions = ann_data.get(<span class="st">"entity_mentions"</span>, [])
+        <span class="kw">for</span> mention <span class="kw">in</span> entity_mentions:
+            annotations.append(EntityMention(
+                entity_type=mention[<span class="st">"entity_type"</span>],
+                span_text=mention[<span class="st">"span_text"</span>],
+                identifier_type=mention[<span class="st">"identifier_type"</span>],
+                ...
+            ))
+    <span class="kw">return</span> TABDocument(doc_id=..., text=..., annotations=annotations)</code></pre>
+
+  <h3>Key Component: Document Chunking</h3>
+  <p>Court documents average ~5,000 characters — too long for a single LLM prompt.
+    We split at <strong>paragraph boundaries</strong> into chunks of &le;3,500 characters,
+    tracking which annotations belong to each chunk:</p>
+<pre><code><span class="kw">def</span> <span class="fn">chunk_document</span>(doc, max_chars=<span class="nb">3500</span>):
+    <span class="kw">if</span> len(doc.text) &lt;= max_chars:
+        <span class="kw">return</span> [(doc.text, doc.annotations)]  <span class="cm"># Fits in one chunk</span>
+
+    chunks = []
+    <span class="kw">for</span> paragraph <span class="kw">in</span> doc.text.split(<span class="st">"\n"</span>):
+        <span class="kw">if</span> current_chunk_too_long:
+            chunks.append((current_chunk, entities_in_range))
+            start_new_chunk()
+    <span class="kw">return</span> chunks</code></pre>
+</div>
+
+<!-- 6. PROMPTS -->
+<div class="card" id="prompts">
+  <h2><span class="section-num">6</span> Prompt Engineering (3 Levels)</h2>
+  <p>
+    Following the original paper's approach, we designed <strong>three prompt levels</strong>
+    of increasing sophistication, mirroring the original Level 1 (naive), Level 2 (intermediate),
+    and Level 3 (CoT + expert) structure. (in src/tab/tab_anonymize.py)
+  </p>
+
+  <h3>Level 1 — Naive</h3>
+  <div class="info-box blue">
+    <strong>System:</strong> "You are a helpful assistant that anonymizes legal documents by replacing
+    personal identifiers with appropriate placeholders."<br><br>
+    <strong>Instruction:</strong> Simply asks to replace identifiers with [PERSON], [LOC], etc.<br>
+    <strong>Output:</strong> Write # then anonymized text.
+  </div>
+
+  <h3>Level 2 — Intermediate</h3>
+  <div class="info-box green">
+    <strong>System:</strong> Expert legal document anonymizer role. Emphasizes preserving structure,
+    meaning, and legal reasoning.<br><br>
+    <strong>Instruction:</strong> Specifies all 8 entity categories. Tells model to keep text as is.<br>
+    <strong>Output:</strong> Write # then anonymized text.
+  </div>
+
+  <h3>Level 3 — Advanced (Chain-of-Thought)</h3>
+  <div class="info-box yellow">
+    <strong>System:</strong> Expert with deep ECHR experience. Includes:
+    <ul>
+      <li>All 8 replacement categories with examples</li>
+      <li>DIRECT vs QUASI identifier distinction</li>
+      <li>Co-reference instructions ([PERSON_1], [PERSON_2])</li>
+      <li>Rules about what to keep vs replace</li>
+    </ul>
+    <strong>Input:</strong> Document excerpt + list of pre-identified entities from TAB annotations<br>
+    <strong>Output:</strong> First explain changes, then # followed by anonymized text (Chain-of-Thought)
+  </div>
+
+  <h3>Prompt Structure (Level 3)</h3>
+<pre><code><span class="cm">System Prompt:</span>
+  You are an expert legal document anonymizer...
+  Replacement categories: [PERSON], [LOC], [ORG], [DATETIME]...
+  Rules: Replace DIRECT always, QUASI when risky...
+
+<span class="cm">User Prompt:</span>
+  <span class="st">Header:</span> Below is an excerpt from an ECHR case...
+  <span class="st">Document excerpt:</span>
+    &lt;actual text chunk&gt;
+  <span class="st">Identified entities:</span>
+    - "Mr Galip Yalman" (PERSON, DIRECT)
+    - "36110/97" (CODE, DIRECT)
+    - "Ankara" (LOC, QUASI)
+  <span class="st">Footer:</span> First explain, then write # and anonymized text.</code></pre>
+</div>
+
+<!-- 7. EVALUATION -->
+<div class="card" id="evaluation">
+  <h2><span class="section-num">7</span> Evaluation Metrics</h2>
+  <p>We evaluate two aspects: <strong>privacy protection</strong> (did we mask the right things?)
+    and <strong>text utility</strong> (is the text still useful?).</p>
+
+  <h3>Privacy Metrics</h3>
+  <table>
+    <tr><th>Metric</th><th>What it Measures</th><th>How it's Computed</th></tr>
+    <tr>
+      <td><strong>Entity Recall</strong></td>
+      <td>% of PII entities successfully masked</td>
+      <td>Check if original span text is absent from anonymized output</td>
+    </tr>
+    <tr>
+      <td><strong>Precision Estimate</strong></td>
+      <td>% of inserted placeholders that match real entities</td>
+      <td>Ratio of correctly masked entities to total placeholders</td>
+    </tr>
+    <tr>
+      <td><strong>F1 Score</strong></td>
+      <td>Harmonic mean of precision and recall</td>
+      <td>Standard F1 formula</td>
+    </tr>
+    <tr>
+      <td><strong>Per-Type Recall</strong></td>
+      <td>Recall broken down by entity type</td>
+      <td>Separate counts for PERSON, LOC, ORG, etc.</td>
+    </tr>
+  </table>
+
+  <h3>Utility Metrics</h3>
+  <table>
+    <tr><th>Metric</th><th>What it Measures</th><th>How it's Computed</th></tr>
+    <tr>
+      <td><strong>Word Retention</strong></td>
+      <td>How much original vocabulary is preserved</td>
+      <td>Set intersection of original vs anonymized words</td>
+    </tr>
+    <tr>
+      <td><strong>Structure Similarity</strong></td>
+      <td>Whether paragraph structure is preserved</td>
+      <td>Ratio of paragraph counts</td>
+    </tr>
+  </table>
+
+  <h3>Evaluation Logic</h3>
+<pre><code><span class="kw">def</span> <span class="fn">evaluate_entity_detection</span>(doc, anonymized_text):
+    <span class="kw">for</span> entity <span class="kw">in</span> doc.entities_to_mask:
+        <span class="cm"># If the original span text STILL appears → missed</span>
+        <span class="kw">if</span> entity.span_text <span class="kw">in</span> anonymized_text:
+            overall[<span class="st">"missed"</span>] += <span class="nb">1</span>
+        <span class="kw">else</span>:
+            overall[<span class="st">"masked"</span>] += <span class="nb">1</span>  <span class="cm"># Successfully anonymized!</span>
+
+    recall = masked / total  <span class="cm"># Higher = better privacy</span></code></pre>
+</div>
+
+<!-- 8. EXAMPLE -->
+<div class="card" id="example">
+  <h2><span class="section-num">8</span> Worked Example</h2>
+  <p>Here's what anonymization looks like on a real TAB document excerpt:</p>
+
+  <div class="comparison">
+    <div class="left">
+      <h4>&#128196; Original Text</h4>
+      <p style="line-height: 2;">
+        The case originated in an application (no. <span class="hl-code">36110/97</span>)
+        against the Republic of Turkey lodged with the European Commission of Human Rights
+        under former Article 25 of the Convention...
+        The applicant, <span class="hl-person">Mr Galip Yalman</span>, is a
+        <span class="hl-person">Turkish</span> national who was born in
+        <span class="hl-date">1940</span> and lives in <span class="hl-loc">Ankara</span>.
+      </p>
+    </div>
+    <div class="right">
+      <h4>&#128274; Anonymized Text</h4>
+      <p style="line-height: 2;">
+        The case originated in an application (no. <span class="placeholder">[CODE]</span>)
+        against the Republic of Turkey lodged with the European Commission of Human Rights
+        under former Article 25 of the Convention...
+        The applicant, <span class="placeholder">[PERSON_1]</span>, is a
+        <span class="placeholder">[DEM]</span> national who was born in
+        <span class="placeholder">[DATETIME]</span> and lives in <span class="placeholder">[LOC]</span>.
+      </p>
+    </div>
+  </div>
+
+  <div class="info-box green">
+    <strong>Result:</strong> All 5 identifying entities were replaced with appropriate category
+    placeholders. Legal reasoning and document structure remain fully intact.
+  </div>
+</div>
+
+<!-- 9. HOW TO RUN -->
+<div class="card" id="howto">
+  <h2><span class="section-num">9</span> How to Run</h2>
+
+  <h3>Prerequisites</h3>
+<pre><code><span class="cm"># Only two dependencies needed</span>
+pip install openai==0.28.1
+pip install pyyaml  <span class="cm"># only if using --config flag</span></code></pre>
+
+  <h3>Step 1: View Dataset Statistics (No API Key Needed)</h3>
+<pre><code>cd llm-anonymization
+python run_tab.py --stats_only --split test</code></pre>
+
+  <h3>Step 2: Run Anonymization</h3>
+<pre><code><span class="cm"># Anonymize 5 documents with GPT-4o</span>
+python run_tab.py --model gpt-4o --split test --max_docs 5
+
+<span class="cm"># Compare prompt levels</span>
+python run_tab.py --model gpt-4o --prompt_level 1 --max_docs 10
+python run_tab.py --model gpt-4o --prompt_level 3 --max_docs 10
+
+<span class="cm"># Use a config file</span>
+python run_tab.py --config configs/anonymization/tab.yaml</code></pre>
+
+  <h3>Step 3: Evaluate Results</h3>
+<pre><code>python run_tab.py --evaluate --results_path anonymized_results/tab/results.jsonl --split test</code></pre>
+
+  <h3>Output Files</h3>
+  <table>
+    <tr><th>File</th><th>Content</th></tr>
+    <tr><td><code>anonymized_results/tab/results.jsonl</code></td><td>One JSON per line: original, anonymized, ground truth, metadata</td></tr>
+    <tr><td><code>anonymized_results/tab/evaluation.json</code></td><td>Full evaluation with per-document and aggregate metrics</td></tr>
+  </table>
+</div>
+
+<!-- 10. SUMMARY -->
+<div class="card" id="summary">
+  <h2><span class="section-num">10</span> Summary</h2>
+
+  <div class="info-box blue">
+    <h3 style="margin-top:0;">What We Did</h3>
+    <ol>
+      <li><strong>Studied</strong> the original LLM anonymization pipeline (Reddit attribute-level anonymization)</li>
+      <li><strong>Analyzed</strong> the TAB dataset format (ECHR court cases with entity annotations)</li>
+      <li><strong>Built a data loader</strong> that downloads and parses TAB's nested JSON format</li>
+      <li><strong>Designed entity-aware prompts</strong> at 3 sophistication levels for legal documents</li>
+      <li><strong>Implemented document chunking</strong> to handle long court cases within LLM context limits</li>
+      <li><strong>Created evaluation metrics</strong> (entity recall, precision, per-type analysis, text preservation)</li>
+      <li><strong>Wrapped everything</strong> in a self-contained script with resume support and auto-download</li>
+    </ol>
+  </div>
+
+  <h3>Key Technical Decisions</h3>
+  <table>
+    <tr><th>Decision</th><th>Reason</th></tr>
+    <tr>
+      <td>Self-contained <code>run_tab.py</code></td>
+      <td>Original project has heavy dependencies (PyTorch, sentence-transformers). TAB works with just <code>openai</code>.</td>
+    </tr>
+    <tr>
+      <td>3 prompt levels</td>
+      <td>Mirrors the original paper's approach. Allows comparing simple vs sophisticated prompts.</td>
+    </tr>
+    <tr>
+      <td>Feed ground-truth entities to LLM</td>
+      <td>TAB provides annotations — using them lets the LLM focus on replacement quality.</td>
+    </tr>
+    <tr>
+      <td>Paragraph-based chunking</td>
+      <td>Preserves semantic boundaries. Doesn't split sentences.</td>
+    </tr>
+    <tr>
+      <td>Span-based recall evaluation</td>
+      <td>If the original entity text still appears in output, entity was NOT masked — simple but effective.</td>
+    </tr>
+  </table>
+
+  <h3>Potential Extensions</h3>
+  <ul>
+    <li>Compare multiple models (GPT-4o vs GPT-3.5 vs open-source LLMs)</li>
+    <li>Add BLEU/ROUGE scores for richer utility evaluation</li>
+    <li>Implement iterative anonymization (multiple passes like the original pipeline)</li>
+    <li>Add the official TAB evaluation script for direct comparison with published baselines</li>
+  </ul>
+</div>
+
+<div class="footer">
+  <p>
+    Based on: <em>"Large Language Models are Advanced Anonymizers"</em> — Staab et al., ICLR 2025<br>
+    Dataset: <em>"The Text Anonymization Benchmark (TAB)"</em> — Pilán et al., 2022<br>
+    Report generated April 2026
+  </p>
+</div>
+
+</div>
+</body>
+</html>
