@@ -1,16 +1,51 @@
 # My Project Notes
 
-This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesis. This project uses LLMs to anonymize Reddit comments while preserving text utility.
-I am currently studying the codebase and understanding how the anonymization pipeline works before making changes to the dataset and running further experiments.
+This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesis. The original project uses LLMs to anonymize Reddit comments while preserving text utility. I adapted the pipeline to work on the **TAB (Text Anonymization Benchmark)** dataset — a corpus of 1,268 ECHR court cases with gold-standard entity annotations.
 
-## What I have done so far
+## What I Have Done
+
+### Phase 1: Understanding the Original Project
 - Set up the environment and ran the existing code
 - Explored the anonymization pipeline and prompt engineering strategies
 - Generated the anonymization report (see [anonymization_report.html](https://ebrahiminegin67.github.io/llm-anonymization/anonymization_report.html))
 
-## Next steps
-- Change the dataset and explore different configurations
-- Run new experiments with different models
+### Phase 2: TAB Dataset Adaptation
+- Built a self-contained pipeline (`run_tab.py`) that adapts LLM anonymization to the TAB dataset
+- Implemented a TAB data loader with auto-download from GitHub
+- Designed 3 prompt levels (naive, intermediate, chain-of-thought) for legal document anonymization
+- Added document chunking for long court cases (avg ~5,000 chars)
+- Created entity-level evaluation metrics (recall, precision, per-type breakdown)
+- Achieved **95% entity recall** on 10 test documents with GPT-4o
+- Built a comparison script (`compare_levels_tab.py`) to visualize prompt level differences
+- Full report: [tab_report.html](tab_report.html)
+
+### Quick Start — TAB Anonymization
+
+```bash
+# View dataset statistics (no API key needed)
+python run_tab.py --stats_only --split test
+
+# Anonymize 5 documents with GPT-4o
+python run_tab.py --model gpt-4o --split test --max_docs 5
+
+# Compare prompt levels
+python run_tab.py --model gpt-4o --max_docs 10 --prompt_level 1 --output_dir anonymized_results/tab_level1
+python run_tab.py --model gpt-4o --max_docs 10 --prompt_level 3 --output_dir anonymized_results/tab_level3
+
+# Generate comparison report
+python compare_levels_tab.py
+```
+
+### TAB Files Added
+| File | Purpose |
+|------|---------|
+| `run_tab.py` | Self-contained TAB anonymization runner |
+| `src/tab/tab_loader.py` | TAB dataset parser & downloader |
+| `src/tab/tab_anonymize.py` | Anonymization pipeline (modular version) |
+| `src/tab/tab_evaluation.py` | Evaluation metrics |
+| `configs/anonymization/tab.yaml` | Default TAB config |
+| `compare_levels_tab.py` | Prompt level comparison report generator |
+| `tab_report.html` | Detailed report explaining the adaptation |
 
 ---
 
