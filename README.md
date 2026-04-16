@@ -124,7 +124,7 @@ All our plots have been created with a single call to the `all_plots.sh` script.
 
 ## Citation
 
-If you use this code, please consider citing our work:
+If you use this code, please consider citing the original work and the TAB dataset:
 
 ```bibtex
 @inproceedings{
@@ -133,5 +133,16 @@ If you use this code, please consider citing our work:
     author={Robin Staab and Mark Vero and Mislav Balunović and Martin Vechev},
     booktitle={The Thirteenth International Conference on Learning Representations},
     year={2025},
+}
+
+@article{pilan2022text,
+    title={The Text Anonymization Benchmark (TAB): A Dedicated Corpus and Evaluation Framework for Text Anonymization},
+    author={Pilán, Ildikó and Lison, Pierre and Øvrelid, Lilja and Papadopoulou, Anthi and Sánchez, David and Batet, Montserrat},
+    journal={Computational Linguistics},
+    volume={48},
+    number={4},
+    pages={1053--1101},
+    year={2022},
+    publisher={MIT Press}
 }
 ```
