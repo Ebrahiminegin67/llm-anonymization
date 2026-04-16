@@ -17,7 +17,8 @@ This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesi
 - Created entity-level evaluation metrics (recall, precision, per-type breakdown)
 - Achieved **95% entity recall** on 10 test documents with GPT-4o
 - Built a comparison script (`compare_levels_tab.py`) to visualize prompt level differences
-- Full report: [tab_report.html]((https://ebrahiminegin67.github.io/llm-anonymization/tab_report.html))
+- Full report: (see [tab_report.html](https://ebrahiminegin67.github.io/llm-anonymization/tab_report.html))
+
 
 ### Quick Start — TAB Anonymization
 
