@@ -215,7 +215,6 @@
 <div class="header">
   <h1>LLM Anonymization on the TAB Dataset</h1>
   <p>Adapting "Large Language Models are Advanced Anonymizers" (ICLR 2025) to the Text Anonymization Benchmark</p>
-  <div class="subtitle">Project Report &mdash; April 2026</div>
 </div>
 
 <div class="container">
@@ -389,7 +388,7 @@
   <h3>What We Reused vs. What We Built New</h3>
   <div class="comparison">
     <div class="left">
-      <h4>&#9851; Reused from Original</h4>
+      <h4>Reused from Original</h4>
       <ul>
         <li>OpenAI API integration (<code>openai.ChatCompletion</code>)</li>
         <li>Prompt engineering philosophy (3 levels)</li>
@@ -400,7 +399,7 @@
       </ul>
     </div>
     <div class="right">
-      <h4>&#127381; Built New for TAB</h4>
+      <h4>Built New for TAB</h4>
       <ul>
         <li>TAB data loader and parser</li>
         <li>Document chunking (for long texts)</li>
@@ -471,7 +470,7 @@
     <span class="kw">return</span> TABDocument(doc_id=..., text=..., annotations=annotations)</code></pre>
 
   <h3>Key Component: Document Chunking</h3>
-  <p>Court documents average ~5,000 characters — too long for a single LLM prompt.
+  <p>Court documents average ~5,000 characters . It is too long for a single LLM prompt.
     We split at <strong>paragraph boundaries</strong> into chunks of &le;3,500 characters,
     tracking which annotations belong to each chunk:</p>
 <pre><code><span class="kw">def</span> <span class="fn">chunk_document</span>(doc, max_chars=<span class="nb">3500</span>):
@@ -606,7 +605,7 @@
 
   <div class="comparison">
     <div class="left">
-      <h4>&#128196; Original Text</h4>
+      <h4>Original Text</h4>
       <p style="line-height: 2;">
         The case originated in an application (no. <span class="hl-code">36110/97</span>)
         against the Republic of Turkey lodged with the European Commission of Human Rights
@@ -617,7 +616,7 @@
       </p>
     </div>
     <div class="right">
-      <h4>&#128274; Anonymized Text</h4>
+      <h4>Anonymized Text</h4>
       <p style="line-height: 2;">
         The case originated in an application (no. <span class="placeholder">[CODE]</span>)
         against the Republic of Turkey lodged with the European Commission of Human Rights
