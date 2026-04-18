@@ -129,7 +129,7 @@ def get_out_file(cfg: Config) -> Tuple[TextIO, str]:
 
     if cfg.store:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        f = open(file_path, "w")
+        f = open(file_path, "w", encoding="utf-8")
         sys.stdout = f
 
     return f, file_path

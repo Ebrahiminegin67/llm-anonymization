@@ -1,0 +1,53 @@
+output_dir: "results"
+seed: 10
+task: "ANONYMIZED"
+dryrun: False
+save_prompts: True
+timeout: 0.0
+task_config:
+    profile_path: "data/base_inferences/synthetic/inference_0.jsonl"
+    outpath: "anonymized_results/parallel_gpt4o_vs_claude_20profiles"
+    anonymizer:
+      anon_type: "llm"
+      target_mode: "single"
+      max_workers: 1
+    anon_model:
+      name: "gpt-4o"
+      provider: "openai"
+      args: {
+        temperature: 0.1
+      }
+    # Primary inference model (analytical/structured approach)
+    inference_model:
+      name: "gpt-4o"
+      provider: "openai"
+      args: {
+        temperature: 0.1
+      }
+    # Secondary inference model (different model or different temperature)
+    eval_inference_model:
+      name: "claude-sonnet-4-6"
+      provider: "anthropic"
+      args: {
+        temperature: 0.5
+      }
+    utility_model:
+      name: "gpt-4o"
+      provider: "openai"
+      args: {
+        temperature: 0.1
+      }
+    profile_filter:
+      hardness: 1
+      certainty: 1
+      num_tokens: 2000
+    max_num_iterations: 2
+    use_ner: False
+    offset: 0
+    num_profiles: 20 
+gen_model:
+  name: "gpt-3.5-turbo"
+  provider: "openai"
+  args: {
+    temperature: 0.1
+  }
