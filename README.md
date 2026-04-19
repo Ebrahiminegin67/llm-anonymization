@@ -19,6 +19,44 @@ This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesi
 - Built a comparison script (`compare_levels_tab.py`) to visualize prompt level differences (see [comparison_report.html](https://ebrahiminegin67.github.io/llm-anonymization/comparison_report.html))
 - Full report: (see [tab_report.html](https://ebrahiminegin67.github.io/llm-anonymization/tab_report.html))
 
+### Phase 3: Parallel Inference Attacks
+- Designed a new pipeline architecture that runs **two inference attacks in parallel** using different model architectures
+- Attack A (GPT-4o) uses an analytical prompt; Attack B (Claude Sonnet 4) uses a sociolinguistic prompt
+- Inferences are **merged** before anonymization, giving the anonymizer a more complete view of privacy-leaking signals
+- After anonymization, both attacks are re-run to measure how well each was defeated
+- Compared against the standard single-attack baseline on 20 profiles
+- **Key result: 50% of attacks fully defeated** (parallel) vs **20%** (baseline) — a **2.5x improvement**
+- The diversity of attack perspectives (different models + different prompts) helps the anonymizer identify and protect against more attack vectors
+- Built an HTML comparison report: (see [comparison_report.html](https://ebrahiminegin67.github.io/llm-anonymization/comparison_report.html))
+
+#### Key Findings
+1. **Parallel defeats attacks far more often (50% vs 20%)** — merged inference gives the anonymizer significantly better information about what to protect
+2. **Certainty drop paradox** — baseline drops certainty more per PII type (0.85 vs 0.65), but this is because it starts with higher certainty (3.85 vs 2.7) due to consistent single-model signal. The parallel pipeline's merged inference is noisier but more comprehensive
+3. **Defeat rate > certainty drop** — "defeated" means the attacker's guesses completely changed, which is a stronger measure than subjective certainty reduction
+4. **Architecture diversity matters** — combining analytical (GPT-4o) and sociolinguistic (Claude) attack styles captures different privacy-leaking patterns
+
+### Quick Start — Parallel Inference
+
+```bash
+# Run the parallel pipeline (GPT-4o + Claude) on 20 profiles
+python run_parallel_inference.py --config_path configs/anonymization/parallel_inference.yaml
+
+# Run the baseline single-attack pipeline for comparison
+python main.py --config_path configs/anonymization/baseline_single_attack.yaml
+
+# Generate the HTML comparison report
+python generate_comparison_report.py
+```
+
+### Parallel Inference Files Added
+| File | Purpose |
+|------|---------|
+| `run_parallel_inference.py` | Parallel inference attack pipeline (dual-model) |
+| `generate_comparison_report.py` | Baseline vs parallel HTML comparison report |
+| `configs/anonymization/parallel_inference.yaml` | Config for parallel pipeline (GPT-4o + Claude) |
+| `configs/anonymization/baseline_single_attack.yaml` | Config for single-attack baseline comparison |
+
+---
 
 ### Quick Start — TAB Anonymization
 
