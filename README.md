@@ -19,6 +19,36 @@ This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesi
 - Built a comparison script (`compare_levels_tab.py`) to visualize prompt level differences 
 - Full report: (see [tab_report.html](https://ebrahiminegin67.github.io/llm-anonymization/tab_report.html))
 
+### Quick Start — TAB Anonymization
+
+```bash
+# View dataset statistics (no API key needed)
+python run_tab.py --stats_only --split test
+
+# Anonymize 5 documents with GPT-4o
+python run_tab.py --model gpt-4o --split test --max_docs 5
+
+# Compare prompt levels
+python run_tab.py --model gpt-4o --max_docs 10 --prompt_level 1 --output_dir anonymized_results/tab_level1
+python run_tab.py --model gpt-4o --max_docs 10 --prompt_level 3 --output_dir anonymized_results/tab_level3
+
+# Generate comparison report
+python compare_levels_tab.py
+```
+
+### TAB Files Added
+| File | Purpose |
+|------|---------|
+| `run_tab.py` | Self-contained TAB anonymization runner |
+| `src/tab/tab_loader.py` | TAB dataset parser & downloader |
+| `src/tab/tab_anonymize.py` | Anonymization pipeline (modular version) |
+| `src/tab/tab_evaluation.py` | Evaluation metrics |
+| `configs/anonymization/tab.yaml` | Default TAB config |
+| `compare_levels_tab.py` | Prompt level comparison report generator |
+| `tab_report.html` | Detailed report explaining the adaptation |
+
+---
+
 ### Phase 3: Parallel Inference Attacks
 - Designed a new pipeline architecture that runs **two inference attacks in parallel** using different model architectures
 - Attack A (GPT-4o) uses an analytical prompt; Attack B (Claude Sonnet 4) uses a sociolinguistic prompt
@@ -58,35 +88,7 @@ python generate_comparison_report.py
 
 ---
 
-### Quick Start — TAB Anonymization
 
-```bash
-# View dataset statistics (no API key needed)
-python run_tab.py --stats_only --split test
-
-# Anonymize 5 documents with GPT-4o
-python run_tab.py --model gpt-4o --split test --max_docs 5
-
-# Compare prompt levels
-python run_tab.py --model gpt-4o --max_docs 10 --prompt_level 1 --output_dir anonymized_results/tab_level1
-python run_tab.py --model gpt-4o --max_docs 10 --prompt_level 3 --output_dir anonymized_results/tab_level3
-
-# Generate comparison report
-python compare_levels_tab.py
-```
-
-### TAB Files Added
-| File | Purpose |
-|------|---------|
-| `run_tab.py` | Self-contained TAB anonymization runner |
-| `src/tab/tab_loader.py` | TAB dataset parser & downloader |
-| `src/tab/tab_anonymize.py` | Anonymization pipeline (modular version) |
-| `src/tab/tab_evaluation.py` | Evaluation metrics |
-| `configs/anonymization/tab.yaml` | Default TAB config |
-| `compare_levels_tab.py` | Prompt level comparison report generator |
-| `tab_report.html` | Detailed report explaining the adaptation |
-
----
 
 # Overview
 
