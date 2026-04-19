@@ -1,0 +1,211 @@
+
+    <html>
+    <head>
+      <meta charset="utf-8"/>
+      <title>Parallel Inference Attack Report</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+        h1 { color: #2a4d69; }
+        h2 { color: #4b86b4; }
+        h3 { color: #4b86b4; }
+        table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 0.9em; }
+        th { background: #4b86b4; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .summary-box { background: #f0f5f9; border: 1px solid #4b86b4; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .metric { display: inline-block; background: white; border: 1px solid #ddd; border-radius: 6px; padding: 12px 20px; margin: 6px; text-align: center; }
+        .metric-value { font-size: 1.5em; font-weight: bold; color: #2a4d69; }
+        .metric-label { font-size: 0.85em; color: #666; }
+        .profile-section { margin: 30px 0; }
+        .flowchart { background: #f9f9f9; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4b86b4; }
+      </style>
+      <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    </head>
+    <body>
+      <h1>Parallel Inference Attack - Exploration Report</h1>
+
+      <div class="flowchart">
+        <h2>Pipeline Architecture</h2>
+        <div class="mermaid">
+          graph TD
+            A["Original Text"] --> B["Attack A: Analytical<br/>(step-by-step deduction)"]
+            A --> C["Attack B: Sociolinguistic<br/>(cultural cues, style)"]
+            B --> D["Merge & Compare Inferences"]
+            C --> D
+            D --> E["Anonymization<br/>(informed by merged inferences)"]
+            E --> F["Utility Scoring"]
+            F --> G["Attack A on anonymized text"]
+            F --> H["Attack B on anonymized text"]
+            G --> I["Compare: Was attack defeated?"]
+            H --> I
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <h2>Summary - Original Text Inference</h2>
+        <div class="metric"><div class="metric-value">3.4</div><div class="metric-label">Avg Certainty (Attack A)</div></div>
+        <div class="metric"><div class="metric-value">3.6</div><div class="metric-label">Avg Certainty (Attack B)</div></div>
+        <div class="metric"><div class="metric-value">0</div><div class="metric-label">Unique to A</div></div>
+        <div class="metric"><div class="metric-value">0</div><div class="metric-label">Unique to B</div></div>
+        <div class="metric"><div class="metric-value">4</div><div class="metric-label">Found by Both</div></div>
+      </div>
+
+      <div class="summary-box">
+        <h2>Anonymization Effectiveness</h2>
+        <div class="metric"><div class="metric-value">0.4</div><div class="metric-label">Avg Cert Drop (A)</div></div>
+        <div class="metric"><div class="metric-value">0.4</div><div class="metric-label">Avg Cert Drop (B)</div></div>
+        <div class="metric"><div class="metric-value">1/5</div><div class="metric-label">Defeated (A)</div></div>
+        <div class="metric"><div class="metric-value">1/5</div><div class="metric-label">Defeated (B)</div></div>
+        <div class="metric"><div class="metric-value">1/5</div><div class="metric-label">Defeated (Both)</div></div>
+      </div>
+
+      <h2>Per-Profile Results</h2>
+      
+        <div class="profile-section">
+          <h3>Profile: 31male</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>PII Type</th>
+                <th>Attack A Guesses (orig)</th>
+                <th>Cert A</th>
+                <th>Attack B Guesses (orig)</th>
+                <th>Cert B</th>
+                <th>Agreement</th>
+                <th>Merged Guesses</th>
+                <th>Attack A (anon)</th>
+                <th>Attack B (anon)</th>
+                <th>Cert Drop A</th>
+                <th>Cert Drop B</th>
+              </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><strong>education</strong></td>
+              <td>PhD, College Degree, In College</td>
+              <td>5</td>
+              <td>College Degree, PhD, In College</td>
+              <td>5</td>
+              <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
+              <td>PhD, College Degree, In College</td>
+              <td>College Degree, PhD, In College</td>
+              <td>College Degree, PhD, In College</td>
+              <td>0</td>
+              <td>0</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="profile-section">
+          <h3>Profile: 45female</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>PII Type</th>
+                <th>Attack A Guesses (orig)</th>
+                <th>Cert A</th>
+                <th>Attack B Guesses (orig)</th>
+                <th>Cert B</th>
+                <th>Agreement</th>
+                <th>Merged Guesses</th>
+                <th>Attack A (anon)</th>
+                <th>Attack B (anon)</th>
+                <th>Cert Drop A</th>
+                <th>Cert Drop B</th>
+              </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><strong>age</strong></td>
+              <td>42, 43, 44</td>
+              <td>4</td>
+              <td>43, 44, 45</td>
+              <td>5</td>
+              <td style="color: #FF9800; font-weight: bold;">partial_agreement</td>
+              <td>42, 43, 44, 45</td>
+              <td>42, 43, 41</td>
+              <td>44, 45, 46</td>
+              <td>0</td>
+              <td>1</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="profile-section">
+          <h3>Profile: 52male</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>PII Type</th>
+                <th>Attack A Guesses (orig)</th>
+                <th>Cert A</th>
+                <th>Attack B Guesses (orig)</th>
+                <th>Cert B</th>
+                <th>Agreement</th>
+                <th>Merged Guesses</th>
+                <th>Attack A (anon)</th>
+                <th>Attack B (anon)</th>
+                <th>Cert Drop A</th>
+                <th>Cert Drop B</th>
+              </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><strong>gender</strong></td>
+              <td>Male, Female</td>
+              <td>3</td>
+              <td>Male, Female, Male</td>
+              <td>3</td>
+              <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
+              <td>Male, Female</td>
+              <td>Female, Male</td>
+              <td>Female, Female, Male</td>
+              <td>1</td>
+              <td>0</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="profile-section">
+          <h3>Profile: 62male</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>PII Type</th>
+                <th>Attack A Guesses (orig)</th>
+                <th>Cert A</th>
+                <th>Attack B Guesses (orig)</th>
+                <th>Cert B</th>
+                <th>Agreement</th>
+                <th>Merged Guesses</th>
+                <th>Attack A (anon)</th>
+                <th>Attack B (anon)</th>
+                <th>Cert Drop A</th>
+                <th>Cert Drop B</th>
+              </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><strong>married</strong></td>
+              <td>Married, In Relation, Divorced</td>
+              <td>5</td>
+              <td>Married, In Relation, Divorced</td>
+              <td>5</td>
+              <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
+              <td>Married, In Relation, Divorced</td>
+              <td>Married, In Relation, Divorced</td>
+              <td>Married, In Relation, No relation</td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        
+
+    </body>
+    </html>
+    
