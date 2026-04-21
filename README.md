@@ -57,7 +57,7 @@ python compare_levels_tab.py
 - Compared against the standard single-attack baseline on 20 profiles
 - **Key result: 50% of attacks fully defeated** (parallel) vs **20%** (baseline) — a **2.5x improvement**
 - The diversity of attack perspectives (different models + different prompts) helps the anonymizer identify and protect against more attack vectors
-- Built an HTML comparison report: (see [comparison_report.html](https://ebrahiminegin67.github.io/llm-anonymization/comparison_report.html))
+- Built an HTML comparison report: (see [baseline_vs_parallel_report.html](https://ebrahiminegin67.github.io/llm-anonymization/anonymized_results/baseline_vs_parallel_report.html))
 
 #### Key Findings
 1. **Parallel defeats attacks far more often (50% vs 20%)** — merged inference gives the anonymizer significantly better information about what to protect
@@ -75,14 +75,14 @@ python run_parallel_inference.py --config_path configs/anonymization/parallel_in
 python main.py --config_path configs/anonymization/baseline_single_attack.yaml
 
 # Generate the HTML comparison report
-python generate_comparison_report.py
+python generate_baseline_vs_parallel_report.py
 ```
 
 ### Parallel Inference Files Added
 | File | Purpose |
 |------|---------|
 | `run_parallel_inference.py` | Parallel inference attack pipeline (dual-model) |
-| `generate_comparison_report.py` | Baseline vs parallel HTML comparison report |
+| `generate_baseline_vs_parallel_report.py` | Baseline vs parallel HTML comparison report |
 | `configs/anonymization/parallel_inference.yaml` | Config for parallel pipeline (GPT-4o + Claude) |
 | `configs/anonymization/baseline_single_attack.yaml` | Config for single-attack baseline comparison |
 
