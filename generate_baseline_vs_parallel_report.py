@@ -369,5 +369,5 @@ if __name__ == "__main__":
     generate_comparison_html(
         baseline_dir="anonymized_results/baseline_single_attack_20profiles",
         parallel_dir="anonymized_results/parallel_gpt4o_vs_claude_20profiles",
-        output_path="anonymized_results/comparison_report.html",
+        output_path="anonymized_results/baseline_vs_parallel_report.html",
     )

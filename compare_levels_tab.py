@@ -6,6 +6,7 @@ LEVELS = {
     "Level 1 (Naive)": "anonymized_results/tab_level1/evaluation.json",
     "Level 2 (Intermediate)": "anonymized_results/tab_level2/evaluation.json",
     "Level 3 (CoT Expert)": "anonymized_results/tab_level3/evaluation.json",
+    "Level 3_fix1 (CoT Expert)": "anonymized_results/tab_level3_fix1/evaluation.json"
 }
 
 def load_eval(path):
@@ -52,6 +53,7 @@ def generate_html(evals):
   .bar.green {{ background: linear-gradient(90deg, #28a745, #5cb85c); }}
   .bar.blue {{ background: linear-gradient(90deg, #4b86b4, #6ca0c8); }}
   .bar.orange {{ background: linear-gradient(90deg, #fd7e14, #f5a623); }}
+  .bar.purple {{ background: linear-gradient(90deg, #9b59b6, #b07cce); }}
   .legend {{ display: flex; gap: 24px; justify-content: center; margin: 20px 0; }}
   .legend-item {{ display: flex; align-items: center; gap: 6px; }}
   .legend-dot {{ width: 14px; height: 14px; border-radius: 4px; }}
@@ -67,13 +69,14 @@ def generate_html(evals):
   <div class="legend-item"><div class="legend-dot" style="background:#28a745"></div> Level 1 (Naive)</div>
   <div class="legend-item"><div class="legend-dot" style="background:#4b86b4"></div> Level 2 (Intermediate)</div>
   <div class="legend-item"><div class="legend-dot" style="background:#fd7e14"></div> Level 3 (CoT Expert)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#9b59b6"></div> Level 3_fix1 (CoT Expert)</div>
 </div>
 
 <h2>Overall Metrics</h2>
 <table>
 <tr><th>Metric</th>"""
 
-    colors = ["green", "blue", "orange"]
+    colors = ["green", "blue", "orange", "purple"]
     for name in level_names:
         html += f"<th>{name}</th>"
     html += "</tr>\n"
@@ -139,7 +142,7 @@ def main():
         sys.exit(1)
 
     html = generate_html(evals)
-    out = "comparison_report.html"
+    out = "prompt_level_comparison_TAB.html"
     with open(out, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"\nComparison report saved to {out}")

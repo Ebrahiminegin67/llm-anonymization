@@ -41,8 +41,8 @@
       <div class="comparison-cards">
         <div class="card baseline">
           <div class="card-label">Baseline (GPT-4o only)</div>
-          <div class="card-value">20.0%</div>
-          <div class="card-label">4/20 defeated</div>
+          <div class="card-value">15.0%</div>
+          <div class="card-label">3/20 defeated</div>
         </div>
         <div class="card parallel winner">
           <div class="card-label">Parallel &mdash; Attack A (GPT-4o)</div>
@@ -65,10 +65,10 @@
       <div class="summary-grid">
         <div class="summary-box">
           <h3 style="color:#2196F3;">Baseline (Single Attack)</h3>
-          <div class="metric-row"><span class="metric-label">Avg Pre-Anon Certainty</span><span class="metric-value">3.85</span></div>
-          <div class="metric-row"><span class="metric-label">Avg Post-Anon Certainty</span><span class="metric-value">3.0</span></div>
-          <div class="metric-row"><span class="metric-label">Avg Certainty Drop</span><span class="metric-value">0.85</span></div>
-          <div class="metric-row"><span class="metric-label">Defeat Rate</span><span class="metric-value">20.0%</span></div>
+          <div class="metric-row"><span class="metric-label">Avg Pre-Anon Certainty</span><span class="metric-value">3.75</span></div>
+          <div class="metric-row"><span class="metric-label">Avg Post-Anon Certainty</span><span class="metric-value">3.05</span></div>
+          <div class="metric-row"><span class="metric-label">Avg Certainty Drop</span><span class="metric-value">0.7</span></div>
+          <div class="metric-row"><span class="metric-label">Defeat Rate</span><span class="metric-value">15.0%</span></div>
         </div>
         <div class="summary-box highlight">
           <h3 style="color:#9C27B0;">Parallel (GPT-4o + Claude)</h3>
@@ -86,11 +86,11 @@
       <div class="verdict">
         <h2>Verdict</h2>
         <p>The <strong>parallel pipeline</strong> defeats <strong>50.0%</strong> of GPT-4o attacks 
-           vs the baseline's <strong>20.0%</strong> &mdash; 
-           a <strong>2.5x improvement</strong>.</p>
+           vs the baseline's <strong>15.0%</strong> &mdash; 
+           a <strong>3.3x improvement</strong>.</p>
         <p>Merging inferences from two different model architectures (GPT-4o analytical + Claude sociolinguistic) 
            gives the anonymizer a more complete picture of privacy-leaking signals, leading to more thorough protection.</p>
-        <p>However, the certainty drop per PII type is lower (0.65 vs 0.85),
+        <p>However, the certainty drop per PII type is lower (0.65 vs 0.7),
            suggesting the parallel approach focuses on <em>changing</em> what the attacker guesses rather than just 
            reducing confidence.</p>
       </div>
@@ -133,24 +133,24 @@
             <tr>
               <td><strong>21male</strong></td>
               <td>married</td>
-              <td>4</td>
+              <td>3</td>
               <td>2</td>
-              <td>2</td>
+              <td>1</td>
               <td><span style="color:#f44336;">NO</span></td>
               <td>2</td>
               <td><span style="color:#f44336;">NO</span></td>
               <td>1</td>
               <td><span style="color:#f44336;">NO</span></td>
               <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td>Tie</td>
+              <td><span style="color:#9C27B0;">Parallel</span></td>
             </tr>
             
             <tr>
               <td><strong>23male</strong></td>
               <td>location</td>
-              <td>5</td>
+              <td>4</td>
               <td>3</td>
-              <td>2</td>
+              <td>1</td>
               <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
               <td>2</td>
               <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
@@ -196,13 +196,13 @@
               <td>5</td>
               <td>4</td>
               <td>1</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+              <td><span style="color:#f44336;">NO</span></td>
               <td>1</td>
               <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
               <td>2</td>
               <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
               <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td>Tie</td>
+              <td><span style="color:#9C27B0;font-weight:bold;">Parallel</span></td>
             </tr>
             
             <tr>
@@ -224,15 +224,15 @@
               <td><strong>30female</strong></td>
               <td>education</td>
               <td>4</td>
-              <td>3</td>
-              <td>1</td>
+              <td>4</td>
+              <td>0</td>
               <td><span style="color:#f44336;">NO</span></td>
               <td>0</td>
               <td><span style="color:#f44336;">NO</span></td>
               <td>-3</td>
               <td><span style="color:#f44336;">NO</span></td>
               <td style="color:#FF9800;font-weight:bold;">partial_agreement</td>
-              <td><span style="color:#2196F3;">Baseline</span></td>
+              <td>Tie</td>
             </tr>
             
             <tr>
@@ -299,15 +299,15 @@
               <td><strong>55female</strong></td>
               <td>education</td>
               <td>4</td>
-              <td>3</td>
-              <td>1</td>
+              <td>4</td>
+              <td>0</td>
               <td><span style="color:#f44336;">NO</span></td>
               <td>0</td>
               <td><span style="color:#f44336;">NO</span></td>
               <td>1</td>
               <td><span style="color:#f44336;">NO</span></td>
               <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td><span style="color:#2196F3;">Baseline</span></td>
+              <td>Tie</td>
             </tr>
             
             <tr>
@@ -331,22 +331,22 @@
       <h2>Key Findings</h2>
       <div style="background:white; border:1px solid #ddd; border-radius:10px; padding:28px; margin:20px 0; box-shadow:0 2px 6px rgba(0,0,0,0.06); line-height:1.7;">
 
-        <h3 style="color:#2a4d69; margin-top:0;">1. The parallel pipeline defeats attacks far more often: 50.0% vs 20.0%</h3>
+        <h3 style="color:#2a4d69; margin-top:0;">1. The parallel pipeline defeats attacks far more often: 50.0% vs 15.0%</h3>
         <p>The merged inference (combining GPT-4o + Claude insights) gives the anonymizer significantly better information about what to protect. When the anonymizer knows about more attack vectors, it removes more identifying information.</p>
 
         <h3 style="color:#2a4d69;">2. The certainty drop paradox</h3>
-        <p>The certainty drop is lower in the parallel pipeline (0.65 vs 0.85). This seems contradictory &mdash; the baseline drops certainty more per PII type. The reason: the baseline starts with higher certainty (3.85 avg) because it uses the same model/prompt for inference and has consistent signal. The parallel pipeline starts lower (2.7) because the merged inference is noisier.</p>
+        <p>The certainty drop is lower in the parallel pipeline (0.65 vs 0.7). This seems contradictory &mdash; the baseline drops certainty more per PII type. The reason: the baseline starts with higher certainty (3.75 avg) because it uses the same model/prompt for inference and has consistent signal. The parallel pipeline starts lower (2.7) because the merged inference is noisier.</p>
 
         <h3 style="color:#2a4d69;">3. Defeat rate is the more meaningful metric</h3>
-        <p>Certainty drop is continuous and subjective (model self-assessment). &ldquo;Defeated&rdquo; means the attacker&rsquo;s guesses completely changed &mdash; the anonymizer successfully misdirected the attack. 50.0% defeated vs 20.0% defeated is a clear win for the parallel approach.</p>
+        <p>Certainty drop is continuous and subjective (model self-assessment). &ldquo;Defeated&rdquo; means the attacker&rsquo;s guesses completely changed &mdash; the anonymizer successfully misdirected the attack. 50.0% defeated vs 15.0% defeated is a clear win for the parallel approach.</p>
 
         <h3 style="color:#2a4d69;">4. Effectiveness</h3>
-        <p>Parallel anonymization is <strong>2.5x more effective</strong> at fully defeating inference attacks. The merged inference from two different architectures gives the anonymizer a more complete picture of what&rsquo;s leaking, leading to more thorough anonymization.</p>
+        <p>Parallel anonymization is <strong>3.3x more effective</strong> at fully defeating inference attacks. The merged inference from two different architectures gives the anonymizer a more complete picture of what&rsquo;s leaking, leading to more thorough anonymization.</p>
       </div>
 
       <div style="background:linear-gradient(135deg,#e3f2fd,#f3e5f5); border:2px solid #7B1FA2; border-radius:12px; padding:24px; margin:24px 0;">
         <h2 style="color:#4A148C; margin-top:0;">Bottom Line</h2>
-        <p style="font-size:1.05em; line-height:1.7;">Yes, the parallel pipeline produces meaningfully better anonymization. Feeding the anonymizer with insights from both GPT-4o (analytical) and Claude (sociolinguistic) results in <strong>50.0%</strong> of attacks being fully defeated vs only <strong>20.0%</strong> with the traditional single-attack approach. The diversity of attack perspectives helps the anonymizer identify and address more privacy-leaking signals in the text.</p>
+        <p style="font-size:1.05em; line-height:1.7;">Yes, the parallel pipeline produces meaningfully better anonymization. Feeding the anonymizer with insights from both GPT-4o (analytical) and Claude (sociolinguistic) results in <strong>50.0%</strong> of attacks being fully defeated vs only <strong>15.0%</strong> with the traditional single-attack approach. The diversity of attack perspectives helps the anonymizer identify and address more privacy-leaking signals in the text.</p>
       </div>
 
       <h2>Methodology Notes</h2>

@@ -228,6 +228,8 @@ def create_tab_prompt(doc, text_chunk, entities_in_chunk, prompt_level=3):
             "Rules:\n"
             "- Replace DIRECT identifiers (uniquely identify someone) always\n"
             "- Replace QUASI identifiers (could identify in combination) when they pose risk\n"
+            "- Always replace [CODE] and [ORG] unconditionally — case numbers, reference codes, "
+            "court names, and all organization names must always be masked, even if they appear generic\n"
             "- Keep generic legal terms, article references, and non-identifying text intact\n"
             "- Use the same placeholder for repeated mentions of the same entity "
             "(e.g. [PERSON_1], [PERSON_2] for different people)"
