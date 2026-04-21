@@ -16,7 +16,7 @@ This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesi
 - Added document chunking for long court cases (avg ~5,000 chars)
 - Created entity-level evaluation metrics (recall, precision, per-type breakdown)
 - Achieved **95% entity recall** on 10 test documents with GPT-4o
-- Built a comparison script (`compare_levels_tab.py`) to visualize prompt level differences (see [prompt_level_comparison_TAB.html](https://ebrahiminegin67.github.io/llm-anonymization/prompt_level_comparison_TAB.html)))
+- Built a comparison script (`compare_levels_tab.py`) to visualize prompt level differences (see [prompt_level_comparison_TAB.html](https://ebrahiminegin67.github.io/llm-anonymization/prompt_level_comparison_TAB.html))
 - Full report: (see [tab_report.html](https://ebrahiminegin67.github.io/llm-anonymization/tab_report.html))
 
 ### Quick Start — TAB Anonymization
@@ -58,6 +58,7 @@ python compare_levels_tab.py
 - **Key result: 50% of attacks fully defeated** (parallel) vs **20%** (baseline) — a **2.5x improvement**
 - The diversity of attack perspectives (different models + different prompts) helps the anonymizer identify and protect against more attack vectors
 - Built an HTML comparison report: (see [baseline_vs_parallel_report.html](https://ebrahiminegin67.github.io/llm-anonymization/anonymized_results/baseline_vs_parallel_report.html))
+- Parallel inference attack report: (see [parallel_inference_report.html](https://ebrahiminegin67.github.io/llm-anonymization/anonymized_results/parallel_gpt4o_vs_claude_20profiles/parallel_inference_report.html))
 
 #### Key Findings
 1. **Parallel defeats attacks far more often (50% vs 20%)** — merged inference gives the anonymizer significantly better information about what to protect
