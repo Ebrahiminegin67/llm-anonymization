@@ -51,7 +51,18 @@ class LLMFullAnonymizer(Anonymizer):
                     continue
                 inference_string += f"Type: {key}\n"
                 inference_string += f"Inference: {inf['inference']}\n"
+                if inf.get("inference_secondary"):
+                    inference_string += f"Supporting inference: {inf['inference_secondary']}\n"
                 inference_string += f"Guess: {inf['guess']}\n"
+                agreement = inf.get("agreement", "")
+                if agreement == "full_agreement":
+                    inference_string += "Note: Two independent attack strategies fully agree on this — anonymize aggressively.\n"
+                elif agreement == "partial_agreement":
+                    inference_string += "Note: Two independent attack strategies partially agree on this.\n"
+                cert = inf.get("certainty", "")
+                if cert:
+                    inference_string += f"Combined certainty: {cert}/5\n"
+                inference_string += "\n"
         except Exception as e:
             # Fall back to full answer
             inference_string = previous_inferences["full_answer"]

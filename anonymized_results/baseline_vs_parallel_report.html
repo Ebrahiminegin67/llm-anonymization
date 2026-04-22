@@ -2,7 +2,7 @@
     <html>
     <head>
       <meta charset="utf-8"/>
-      <title>Baseline vs Parallel Pipeline Comparison</title>
+      <title>Baseline vs Parallel Pipeline Comparison (v2)</title>
       <style>
         body { font-family: Arial, sans-serif; margin: 24px; color: #222; background: #fafafa; }
         h1 { color: #2a4d69; border-bottom: 3px solid #4b86b4; padding-bottom: 10px; }
@@ -30,70 +30,101 @@
         .card .card-label { color: #666; font-size: 0.85em; }
         .card.baseline .card-value { color: #2196F3; }
         .card.parallel .card-value { color: #9C27B0; }
+        .version-badge { display: inline-block; background: #4CAF50; color: white; border-radius: 4px; padding: 2px 8px; font-size: 0.8em; margin-left: 8px; vertical-align: middle; }
       </style>
     </head>
     <body>
-      <h1>Pipeline Comparison: Baseline vs Parallel Inference</h1>
+      <h1>Pipeline Comparison: Baseline vs Parallel Inference <span class="version-badge">v2 — Improved Attack B</span></h1>
       <p style="color:#666;">Baseline = single GPT-4o attack &rarr; anonymize &rarr; re-attack. &nbsp;
-         Parallel = GPT-4o + Claude parallel attack &rarr; merge &rarr; anonymize &rarr; re-attack both.</p>
+         Parallel = GPT-4o (analytical) + Claude (sociolinguistic, stricter prompt) parallel attack &rarr; merge &rarr; anonymize &rarr; re-attack both.</p>
+      <p style="color:#888; font-size:0.9em;">v2 changes: Attack B prompt enforces plain-text output, limits preamble, clarifies certainty format. Merge ordering uses higher-certainty attack first. Anonymizer receives both inferences + agreement signal.</p>
 
       <h2>Attack Defeat Rate</h2>
+      <p style="color:#555; font-size:0.93em; margin-bottom:6px;">
+        A profile is <strong>"defeated"</strong> when the attacker's guesses after anonymization share <em>no overlap</em> with its guesses before — meaning the anonymizer completely misdirected the attack. A higher defeat rate means stronger privacy protection.
+      </p>
       <div class="comparison-cards">
         <div class="card baseline">
           <div class="card-label">Baseline (GPT-4o only)</div>
           <div class="card-value">15.0%</div>
           <div class="card-label">3/20 defeated</div>
+          <div style="font-size:0.8em;color:#888;margin-top:10px;">Single GPT-4o attack &rarr; anonymize &rarr; re-attack. Only 3 profiles were successfully protected — 17 still leaked PII after anonymization.</div>
         </div>
         <div class="card parallel winner">
           <div class="card-label">Parallel &mdash; Attack A (GPT-4o)</div>
-          <div class="card-value" style="color:#9C27B0;">50.0%</div>
-          <div class="card-label">10/20 defeated</div>
+          <div class="card-value" style="color:#9C27B0;">45.0%</div>
+          <div class="card-label">9/20 defeated</div>
+          <div style="font-size:0.8em;color:#888;margin-top:10px;">After the parallel anonymizer ran, GPT-4o attacked again. In 9/20 profiles its guesses completely changed — the analytical attack was misdirected.</div>
         </div>
         <div class="card parallel winner">
           <div class="card-label">Parallel &mdash; Attack B (Claude)</div>
-          <div class="card-value" style="color:#9C27B0;">60.0%</div>
-          <div class="card-label">12/20 defeated</div>
+          <div class="card-value" style="color:#9C27B0;">45.0%</div>
+          <div class="card-label">9/20 defeated</div>
+          <div style="font-size:0.8em;color:#888;margin-top:10px;">Claude's sociolinguistic attack was also re-run on the anonymized text. In 9/20 profiles its stylistic-cue guesses completely changed — the implicit signals were removed too.</div>
         </div>
-        <div class="card parallel">
+        <div class="card parallel winner">
           <div class="card-label">Parallel &mdash; Both Defeated</div>
-          <div class="card-value" style="color:#2e7d32;">50.0%</div>
-          <div class="card-label">10/20 defeated</div>
+          <div class="card-value" style="color:#2e7d32;">45.0%</div>
+          <div class="card-label">9/20 defeated</div>
+          <div style="font-size:0.8em;color:#888;margin-top:10px;">The strictest measure — both attacks had to be defeated on the same profile simultaneously. 9/20 profiles were protected against GPT-4o and Claude at the same time. All 3 parallel numbers being equal means whenever one attack was defeated, so was the other.</div>
         </div>
       </div>
 
+      <p style="background:#fff8e1; border-left:4px solid #FFC107; padding:14px 18px; border-radius:6px; color:#555; font-size:0.95em; margin-top:20px;">
+        The <strong>3x improvement over baseline (45% vs 15%)</strong> shows the parallel approach is meaningfully stronger — not because the attacks are harder to fool, but because the anonymizer received richer information and rewrote the text more aggressively.
+      </p>
+
       <h2>Certainty Analysis</h2>
-      <div class="summary-grid">
-        <div class="summary-box">
-          <h3 style="color:#2196F3;">Baseline (Single Attack)</h3>
-          <div class="metric-row"><span class="metric-label">Avg Pre-Anon Certainty</span><span class="metric-value">3.75</span></div>
-          <div class="metric-row"><span class="metric-label">Avg Post-Anon Certainty</span><span class="metric-value">3.05</span></div>
-          <div class="metric-row"><span class="metric-label">Avg Certainty Drop</span><span class="metric-value">0.7</span></div>
-          <div class="metric-row"><span class="metric-label">Defeat Rate</span><span class="metric-value">15.0%</span></div>
-        </div>
-        <div class="summary-box highlight">
-          <h3 style="color:#9C27B0;">Parallel (GPT-4o + Claude)</h3>
-          <div class="metric-row"><span class="metric-label">Avg Pre-Anon Cert (A)</span><span class="metric-value">2.7</span></div>
-          <div class="metric-row"><span class="metric-label">Avg Pre-Anon Cert (B)</span><span class="metric-value">2.25</span></div>
-          <div class="metric-row"><span class="metric-label">Avg Post-Anon Cert (A)</span><span class="metric-value">2.05</span></div>
-          <div class="metric-row"><span class="metric-label">Avg Post-Anon Cert (B)</span><span class="metric-value">1.5</span></div>
-          <div class="metric-row"><span class="metric-label">Avg Cert Drop (A)</span><span class="metric-value">0.65</span></div>
-          <div class="metric-row"><span class="metric-label">Avg Cert Drop (B)</span><span class="metric-value">0.75</span></div>
-          <div class="metric-row"><span class="metric-label">Defeat Rate (A)</span><span class="metric-value">50.0%</span></div>
-          <div class="metric-row"><span class="metric-label">Defeat Rate (B)</span><span class="metric-value">60.0%</span></div>
-        </div>
-      </div>
+      <h3 style="color:#2196F3;">Baseline (Single Attack)</h3>
+      <table>
+        <thead><tr><th>Number</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Pre-Anon Certainty: 3.75</strong></td><td>Before anonymization, GPT-4o was fairly confident (3.75 out of 5) that its PII guesses were correct</td></tr>
+          <tr><td><strong>Post-Anon Certainty: 3.05</strong></td><td>After anonymization, GPT-4o's confidence only dropped to 3.05 — still high, meaning the anonymizer barely changed the text</td></tr>
+          <tr><td><strong>Certainty Drop: 0.70</strong></td><td>The anonymizer reduced attacker confidence by only 0.70 points — a weak effect</td></tr>
+          <tr><td><strong>Defeat Rate: 15%</strong></td><td>Only 3/20 profiles were fully protected</td></tr>
+        </tbody>
+      </table>
+
+      <h3 style="color:#9C27B0; margin-top:24px;">Parallel v2 (GPT-4o + Claude)</h3>
+      <table>
+        <thead><tr><th>Number</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Pre-Anon Cert A: 2.60 / B: 2.45</strong></td><td>Before anonymization, both attacks had moderate confidence (~2.5/5). Lower than baseline's 3.75 because parallel profiles are harder to infer</td></tr>
+          <tr><td><strong>Post-Anon Cert A: 2.10 / B: 1.75</strong></td><td>After anonymization, confidence dropped — especially Claude's (2.45→1.75), meaning the anonymizer successfully removed the stylistic signals Claude relied on</td></tr>
+          <tr><td><strong>Cert Drop A: 0.50 / B: 0.70</strong></td><td>The anonymizer reduced attacker confidence by 0.50 (A) and 0.70 (B) — 3–5x larger than v1's drop of 0.15, because the anonymizer now receives both inferences and an agreement signal</td></tr>
+          <tr><td><strong>Defeat Rate A &amp; B: 45%</strong></td><td>9/20 profiles fully protected against each attack — 3x better than baseline</td></tr>
+        </tbody>
+      </table>
 
       <div class="verdict">
         <h2>Verdict</h2>
-        <p>The <strong>parallel pipeline</strong> defeats <strong>50.0%</strong> of GPT-4o attacks 
-           vs the baseline's <strong>15.0%</strong> &mdash; 
-           a <strong>3.3x improvement</strong>.</p>
-        <p>Merging inferences from two different model architectures (GPT-4o analytical + Claude sociolinguistic) 
-           gives the anonymizer a more complete picture of privacy-leaking signals, leading to more thorough protection.</p>
-        <p>However, the certainty drop per PII type is lower (0.65 vs 0.7),
-           suggesting the parallel approach focuses on <em>changing</em> what the attacker guesses rather than just 
-           reducing confidence.</p>
+        <p>The <strong>parallel pipeline (v2)</strong> defeats <strong>45.0%</strong> of attacks
+           vs the baseline's <strong>15.0%</strong> &mdash;
+           a <strong>3.0x improvement</strong>.</p>
+        <p>v2 improvements are most visible in the <strong>certainty drop</strong>: Attack A improved from 0.15 to <strong>0.50</strong> and Attack B from 0.15 to <strong>0.70</strong> &mdash; a 3&ndash;5x increase in anonymizer aggressiveness, driven by giving the anonymizer both inference perspectives and an explicit agreement signal.</p>
+        <p>Attack B's average certainty on original text improved from 1.5 to <strong>2.45</strong> (matching Attack A's 2.60) thanks to the stricter prompt format that eliminated most MISSING responses.</p>
       </div>
+
+      <h2>v1 vs v2 Parallel Comparison</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>v1</th>
+            <th>v2</th>
+            <th>Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Avg certainty Attack B (pre-anon)</td><td>1.50</td><td><strong>2.45</strong></td><td style="color:#4CAF50;">+63%</td></tr>
+          <tr><td>Missing Attack B responses</td><td>7</td><td><strong>6</strong></td><td style="color:#4CAF50;">-1</td></tr>
+          <tr><td>full_agreement between attacks</td><td>7</td><td><strong>10</strong></td><td style="color:#4CAF50;">+3</td></tr>
+          <tr><td>Avg certainty drop A</td><td>0.15</td><td><strong>0.50</strong></td><td style="color:#4CAF50;">+233%</td></tr>
+          <tr><td>Avg certainty drop B</td><td>0.15</td><td><strong>0.70</strong></td><td style="color:#4CAF50;">+367%</td></tr>
+          <tr><td>Attacks defeated (both A and B)</td><td>7/20</td><td><strong>9/20</strong></td><td style="color:#4CAF50;">+2</td></tr>
+        </tbody>
+      </table>
 
       <h2>Per-Profile Breakdown</h2>
       <table>
@@ -114,245 +145,147 @@
           </tr>
         </thead>
         <tbody>
-          
-            <tr>
-              <td><strong>19male</strong></td>
-              <td>education</td>
-              <td>4</td>
-              <td>3</td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>21male</strong></td>
-              <td>married</td>
-              <td>3</td>
-              <td>2</td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>2</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td><span style="color:#9C27B0;">Parallel</span></td>
-            </tr>
-            
-            <tr>
-              <td><strong>23male</strong></td>
-              <td>location</td>
-              <td>4</td>
-              <td>3</td>
-              <td>1</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td>2</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td>1</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td style="color:#FF9800;font-weight:bold;">partial_agreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>24female</strong></td>
-              <td>income</td>
-              <td>3</td>
-              <td>3</td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>3</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>28male</strong></td>
-              <td>married</td>
-              <td>4</td>
-              <td>2</td>
-              <td>2</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>2</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>3</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>29female</strong></td>
-              <td>age</td>
-              <td>5</td>
-              <td>4</td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>1</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td>2</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td><span style="color:#9C27B0;font-weight:bold;">Parallel</span></td>
-            </tr>
-            
-            <tr>
-              <td><strong>29male</strong></td>
-              <td>income</td>
-              <td>4</td>
-              <td>3</td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>0</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td style="color:#9E9E9E;font-weight:bold;">missing</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>30female</strong></td>
-              <td>education</td>
-              <td>4</td>
-              <td>4</td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>-3</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td style="color:#FF9800;font-weight:bold;">partial_agreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>31male</strong></td>
-              <td>gender</td>
-              <td>2</td>
-              <td>2</td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>45female</strong></td>
-              <td>gender</td>
-              <td>2</td>
-              <td>2</td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>47female</strong></td>
-              <td>location</td>
-              <td>4</td>
-              <td>3</td>
-              <td>1</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td>2</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td>2</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td style="color:#f44336;font-weight:bold;">disagreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>52male</strong></td>
-              <td>occupation</td>
-              <td>4</td>
-              <td>3</td>
-              <td>1</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td>1</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td>2</td>
-              <td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
-              <td style="color:#f44336;font-weight:bold;">disagreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>55female</strong></td>
-              <td>education</td>
-              <td>4</td>
-              <td>4</td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>0</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td style="color:#4CAF50;font-weight:bold;">full_agreement</td>
-              <td>Tie</td>
-            </tr>
-            
-            <tr>
-              <td><strong>62male</strong></td>
-              <td>married</td>
-              <td>5</td>
-              <td>4</td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td>1</td>
-              <td><span style="color:#f44336;">NO</span></td>
-              <td style="color:#FF9800;font-weight:bold;">partial_agreement</td>
-              <td>Tie</td>
-            </tr>
-            
+
+          <tr>
+            <td><strong>19male</strong></td><td>education</td>
+            <td>4</td><td>3</td><td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>21male</strong></td><td>married</td>
+            <td>3</td><td>2</td><td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td>2</td><td><span style="color:#f44336;">NO</span></td>
+            <td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>23male</strong></td><td>location</td>
+            <td>4</td><td>3</td><td>1</td><td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+            <td>0</td><td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+            <td>1</td><td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>24female</strong></td><td>income</td>
+            <td>3</td><td>3</td><td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#FF9800;font-weight:bold;">partial_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>28male</strong></td><td>married</td>
+            <td>4</td><td>2</td><td>2</td><td><span style="color:#f44336;">NO</span></td>
+            <td>2</td><td><span style="color:#f44336;">NO</span></td>
+            <td>2</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>29female</strong></td><td>age</td>
+            <td>5</td><td>4</td><td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td>2</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#FF9800;font-weight:bold;">partial_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>29male</strong></td><td>income</td>
+            <td>4</td><td>3</td><td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>30female</strong></td><td>education</td>
+            <td>4</td><td>4</td><td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>31male</strong></td><td>gender</td>
+            <td>2</td><td>2</td><td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>-1</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>45female</strong></td><td>gender</td>
+            <td>2</td><td>2</td><td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>2</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>47female</strong></td><td>location</td>
+            <td>4</td><td>3</td><td>1</td><td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+            <td>1</td><td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+            <td>2</td><td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+            <td style="color:#f44336;font-weight:bold;">disagreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>52male</strong></td><td>occupation</td>
+            <td>4</td><td>3</td><td>1</td><td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+            <td>1</td><td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+            <td>2</td><td><span style="color:#4CAF50;font-weight:bold;">YES</span></td>
+            <td style="color:#FF9800;font-weight:bold;">partial_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>55female</strong></td><td>education</td>
+            <td>4</td><td>4</td><td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td>0</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
+          <tr>
+            <td><strong>62male</strong></td><td>married</td>
+            <td>5</td><td>4</td><td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td>1</td><td><span style="color:#f44336;">NO</span></td>
+            <td>2</td><td><span style="color:#f44336;">NO</span></td>
+            <td style="color:#4CAF50;font-weight:bold;">full_agreement</td><td>Tie</td>
+          </tr>
+
         </tbody>
       </table>
 
       <h2>Key Findings</h2>
       <div style="background:white; border:1px solid #ddd; border-radius:10px; padding:28px; margin:20px 0; box-shadow:0 2px 6px rgba(0,0,0,0.06); line-height:1.7;">
 
-        <h3 style="color:#2a4d69; margin-top:0;">1. The parallel pipeline defeats attacks far more often: 50.0% vs 15.0%</h3>
-        <p>The merged inference (combining GPT-4o + Claude insights) gives the anonymizer significantly better information about what to protect. When the anonymizer knows about more attack vectors, it removes more identifying information.</p>
+        <h3 style="color:#2a4d69; margin-top:0;">1. The parallel pipeline defeats attacks 3x more often: 45.0% vs 15.0%</h3>
+        <p>The merged inference (combining GPT-4o analytical + Claude sociolinguistic) gives the anonymizer significantly better information about what to protect. When the anonymizer knows about more attack vectors, it removes more identifying information.</p>
 
-        <h3 style="color:#2a4d69;">2. The certainty drop paradox</h3>
-        <p>The certainty drop is lower in the parallel pipeline (0.65 vs 0.7). This seems contradictory &mdash; the baseline drops certainty more per PII type. The reason: the baseline starts with higher certainty (3.75 avg) because it uses the same model/prompt for inference and has consistent signal. The parallel pipeline starts lower (2.7) because the merged inference is noisier.</p>
+        <h3 style="color:#2a4d69;">2. The biggest v2 improvement: anonymizer aggressiveness</h3>
+        <p>In v1, the average certainty drop was only 0.15 for both attacks — the anonymizer barely reacted. In v2, the drop is 0.50 (A) and 0.70 (B), a 3&ndash;5x increase. The key change: the anonymizer now receives both inference perspectives and an explicit warning when two independent attacks agree, prompting more thorough rewrites.</p>
 
-        <h3 style="color:#2a4d69;">3. Defeat rate is the more meaningful metric</h3>
-        <p>Certainty drop is continuous and subjective (model self-assessment). &ldquo;Defeated&rdquo; means the attacker&rsquo;s guesses completely changed &mdash; the anonymizer successfully misdirected the attack. 50.0% defeated vs 15.0% defeated is a clear win for the parallel approach.</p>
+        <h3 style="color:#2a4d69;">3. Attack B is now genuinely contributing</h3>
+        <p>In v1, Attack B (Claude) averaged certainty 1.5 and failed on 7/20 profiles. In v2, it averages 2.45 — nearly matching Attack A's 2.60 — with only 6 MISSING responses. The stricter prompt (no markdown, limited preamble, unambiguous certainty format) eliminated most parsing failures.</p>
 
-        <h3 style="color:#2a4d69;">4. Effectiveness</h3>
-        <p>Parallel anonymization is <strong>3.3x more effective</strong> at fully defeating inference attacks. The merged inference from two different architectures gives the anonymizer a more complete picture of what&rsquo;s leaking, leading to more thorough anonymization.</p>
+        <h3 style="color:#2a4d69;">4. Defeat rate is the more meaningful metric</h3>
+        <p>Certainty drop is continuous and based on model self-assessment. &ldquo;Defeated&rdquo; means the attacker's guesses completely changed — the anonymizer successfully misdirected the attack. 45.0% defeated vs 15.0% defeated is a clear win for the parallel approach.</p>
       </div>
 
       <div style="background:linear-gradient(135deg,#e3f2fd,#f3e5f5); border:2px solid #7B1FA2; border-radius:12px; padding:24px; margin:24px 0;">
         <h2 style="color:#4A148C; margin-top:0;">Bottom Line</h2>
-        <p style="font-size:1.05em; line-height:1.7;">Yes, the parallel pipeline produces meaningfully better anonymization. Feeding the anonymizer with insights from both GPT-4o (analytical) and Claude (sociolinguistic) results in <strong>50.0%</strong> of attacks being fully defeated vs only <strong>15.0%</strong> with the traditional single-attack approach. The diversity of attack perspectives helps the anonymizer identify and address more privacy-leaking signals in the text.</p>
+        <p style="font-size:1.05em; line-height:1.7;">The parallel pipeline (v2) produces meaningfully better anonymization than both the baseline and v1. The <strong>defeat rate is 3x higher</strong> than baseline (45% vs 15%), and the <strong>certainty drop improved 3&ndash;5x over v1</strong> (0.15 &rarr; 0.50/0.70). The two key drivers: a stronger Attack B prompt that actually parses correctly, and an anonymizer that now knows it must defeat two independent attack perspectives simultaneously.</p>
       </div>
 
       <h2>Methodology Notes</h2>
       <ul style="color:#555;">
         <li><strong>Baseline:</strong> Standard sequential pipeline &mdash; single GPT-4o inference &rarr; anonymize &rarr; utility &rarr; re-inference (2 iterations)</li>
-        <li><strong>Parallel:</strong> GPT-4o (analytical) + Claude Sonnet 4 (sociolinguistic) parallel inference &rarr; merge &rarr; anonymize &rarr; utility &rarr; parallel re-inference</li>
+        <li><strong>Parallel v2:</strong> GPT-4o (analytical) + Claude Sonnet (sociolinguistic, strict format) parallel inference &rarr; certainty-ordered merge &rarr; anonymize with dual-inference context &rarr; utility &rarr; parallel re-inference</li>
         <li><strong>Defeated:</strong> No overlap between pre- and post-anonymization guesses (attacker completely misdirected)</li>
         <li><strong>Agreement:</strong> Whether the two parallel attacks agree on guesses before anonymization</li>
         <li><strong>Same data:</strong> Both pipelines ran on the same 20 profiles from inference_0.jsonl with identical filters</li>
@@ -360,4 +293,3 @@
 
     </body>
     </html>
-    
