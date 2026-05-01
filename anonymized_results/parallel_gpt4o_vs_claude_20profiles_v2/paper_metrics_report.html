@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Paper-Aligned Metrics — Parallel Inference Pipeline</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 28px; color: #222; background: #fafafa; line-height: 1.55; }
+    h1 { color: #2a4d69; border-bottom: 3px solid #4b86b4; padding-bottom: 10px; }
+    h2 { color: #4b86b4; margin-top: 36px; }
+    h3 { color: #2a4d69; }
+    table { border-collapse: collapse; width: 100%; margin: 14px 0 24px; }
+    th, td { border: 1px solid #ddd; padding: 9px 12px; text-align: center; font-size: 0.87em; }
+    th { background: #4b86b4; color: white; }
+    tr:nth-child(even) { background: #f4f8fb; }
+    tr:hover { background: #e8f0f8; }
+    .section { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 24px;
+                margin: 24px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .metric-chip { display: inline-block; background: #f0f5f9; border: 1px solid #4b86b4;
+                    border-radius: 8px; padding: 10px 18px; margin: 6px; text-align: center; }
+    .chip-val { font-size: 1.6em; font-weight: bold; color: #2a4d69; }
+    .chip-lbl { font-size: 0.8em; color: #555; }
+    .verdict { background: linear-gradient(135deg, #e8f5e9, #f1f8e9); border: 2px solid #4CAF50;
+                border-radius: 12px; padding: 22px 28px; margin: 24px 0; }
+    .verdict h2 { color: #2e7d32; margin-top: 0; }
+    .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 12px 18px;
+             border-radius: 4px; margin: 16px 0; font-size: 0.9em; color: #555; }
+    td:first-child { text-align: left; }
+  </style>
+</head>
+<body>
+
+<h1>Paper-Aligned Metrics: LLMs Are Advanced Anonymizers</h1>
+<p style="color:#666;">
+  Applying the three core metrics from <em>"LLMs Are Advanced Anonymizers"</em> to the
+  <strong>parallel inference pipeline</strong> (GPT-4o analytical + Claude sociolinguistic).
+  Evaluated on <strong>20 PII-type instances</strong> from 14 profiles.
+</p>
+
+<div class="note">
+  <strong>Accuracy method:</strong> String-similarity matching (Jaro–Winkler + normalised
+  label matching for ordinal types) ; the same approach used in the paper's automated
+  evaluation. No LLM judge is called here, which gives a <em>conservative lower bound</em>
+  on true accuracy; the paper additionally uses GPT-4 as a judge for edge cases, which
+  would push accuracy slightly higher.
+</div>
+
+<!-- ── Section 1: Adversarial Accuracy ─────────────────────────────────── -->
+<div class="section">
+  <h2>1 · Adversarial Accuracy</h2>
+  <p>
+    For each (profile, PII-type) pair the attacker's top-k guesses are checked against
+    the ground-truth label.  <strong>Top-1</strong> = first guess only;
+    <strong>Top-3</strong> = correct if any of the three guesses matches.
+    Lower accuracy after anonymization = better privacy protection.
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Stage</th>
+          <th colspan="2">Attack A (GPT-4o Analytical)</th>
+          <th colspan="2">Attack B (Claude Sociolinguistic)</th>
+          <th colspan="2">Merged</th>
+        </tr>
+        <tr>
+          <th>Top-1</th><th>Top-3</th>
+          <th>Top-1</th><th>Top-3</th>
+          <th>Top-1</th><th>Top-3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Before Anonymization</strong></td><td>50.0%</td><td>65.0%</td><td>45.0%</td><td>65.0%</td><td>50.0%</td><td>65.0%</td></tr>
+        <tr><td><strong>After Anonymization</strong></td><td>35.0%</td><td>55.0%</td><td>30.0%</td><td>55.0%</td><td>35.0%</td><td>55.0%</td></tr>
+      </tbody>
+    </table>
+
+    <p>
+    <strong>Before anonymization</strong>: GPT-4o correctly guessed 50% on first try, 65% within top 3. Claude was slightly weaker on Top-1 (45%) but equally strong on Top-3 (65%). This means before any anonymization, both models had roughly the same ability to re-identify the person ; but GPT-4o was more confident (higher Top-1).
+    
+    <strong>After anonymization</strong>: GPT-4o dropped from 50% → 35% Top-1 and 65% → 55% Top-3. Claude dropped from 45% → 30% Top-1 and 65% → 55% Top-3. The merged view also shows 35% Top-1 and 55% Top-3.
+
+    <strong>Key observation</strong>: Top-3 is identical (55%) for all three ; but Claude's Top-1 dropped more (45% → 30%, a 15pp drop) compared to GPT-4o (50% → 35%, a 15pp drop too). Both improved similarly on Top-1. Top-3 hit the same 55% floor for all.
+  </p>
+    
+
+  <h3>Per-PII-Type Breakdown (Top-3 Accuracy)</h3>
+  
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">PII Type</th>
+          <th colspan="3">Before Anonymization (Top-3)</th>
+          <th colspan="3">After Anonymization (Top-3)</th>
+        </tr>
+        <tr>
+          <th>Attack A</th><th>Attack B</th><th>Merged</th>
+          <th>Attack A</th><th>Attack B</th><th>Merged</th>
+        </tr>
+      </thead>
+      <tbody><tr><td><strong>age</strong></td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td></tr><tr><td><strong>education</strong></td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>33.3%</td><td>50.0%</td></tr><tr><td><strong>gender</strong></td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td></tr><tr><td><strong>income</strong></td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td></tr><tr><td><strong>location</strong></td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>0.0%</td><td>50.0%</td><td>0.0%</td></tr><tr><td><strong>married</strong></td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td></tr><tr><td><strong>occupation</strong></td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr></tbody>
+    </table>
+    
+</div>
+<p>This table shows how well the attacker guessed each specific type of personal information, before and after anonymization, for both attackers separately and merged.</p>
+<p>Education ; 50% → 50% (mostly no change, one exception)
+
+GPT-4o and Merged stayed at 50% ; no improvement. However Claude (Attack B) dropped from 50% → 33.3% ; a small but real improvement. This means the anonymizer successfully removed some of the educational signal that Claude specifically detects (vocabulary complexity, academic discourse patterns), but not the signals GPT-4o detects.</p>
+<p>Location ; 100% → 0% for GPT-4o and Merged, but 50% for Claude, This is the most interesting row. Before anonymization, both attackers correctly identified location 100% of the time ; location was explicitly stated in the text (city name, country, region).
+  After anonymization:
+
+GPT-4o (Attack A): 100% → 0% ; complete success. The explicit location phrases were removed and GPT-4o can no longer find them.
+Claude (Attack B): 100% → 50% ; partial success. Claude still gets location right 50% of the time even after anonymization. This means Claude detects location through implicit regional signals ; dialect patterns, cultural references, local idioms ; that the anonymizer did not remove because GPT-4o did not flag them.
+Merged: 100% → 0% ; the merged view uses GPT-4o's result when available, so it shows 0%.
+This is a direct demonstration of why two attackers matter: GPT-4o read the explicit location name; Claude reads implicit cultural signals. The anonymizer removed the explicit name but not the implicit signals.
+</p>
+
+
+<!-- ── Section 2: Adversarial Certainty ────────────────────────────────── -->
+<div class="section">
+  <h2>2 · Adversarial Certainty — Evidence Rate</h2>
+  <p>
+    The attacker self-scores certainty 1–5.  Following the paper's binary framing
+    (0 = statistical guess / 1 = direct textual evidence), we map certainty ≥ 3
+    as "has evidence".  The <strong>evidence rate</strong> is the fraction of
+    inferences citing real signal in the text.  A drop after anonymization means
+    the anonymizer successfully removed textual evidence.
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Stage</th>
+          <th colspan="2">Attack A (GPT-4o)</th>
+          <th colspan="2">Attack B (Claude)</th>
+          <th colspan="2">Merged</th>
+        </tr>
+        <tr>
+          <th>Evidence Rate</th><th>Avg Certainty</th>
+          <th>Evidence Rate</th><th>Avg Certainty</th>
+          <th>Evidence Rate</th><th>Avg Certainty</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Before Anonymization</strong></td><td>60.0%</td><td>2.60/5</td><td>55.0%</td><td>2.45/5</td><td>65.0%</td><td>2.75/5</td></tr>
+        <tr><td><strong>After Anonymization</strong></td><td>50.0%</td><td>2.10/5</td><td>30.0%</td><td>1.75/5</td><td>55.0%</td><td>2.15/5</td></tr>
+      </tbody>
+    </table>
+    
+  <p><strong>Before anonymization:</strong> Before any editing, GPT-4o found direct textual evidence in 60% of its predictions, meaning in 60% of cases it could point to something specific in the text. Claude found evidence in 55% of cases. The merged view is 65% because combining both attackers captures more evidence overall.
+
+<strong>After anonymization:</strong>GPT-4o: Evidence rate dropped from 60% → 50% (−10pp). Still finds direct evidence half the time. Certainty dropped from 2.60 → 2.10.
+
+Claude: Evidence rate dropped from 55% → 30% (−25pp). This is the strongest result in the entire report. After anonymization, Claude can only find readable evidence in 30% of predictions ; down from 55%. Its certainty dropped from 2.45 → 1.75, which is now below the midpoint of the scale, meaning on average Claude is closer to "guessing" than "has evidence."
+
+Merged: 65% → 55% (−10pp). The merged view is pulled up by GPT-4o's persistent 50% ; Claude improved much more but GPT-4o drags the average up. 
+</div>
+
+<!-- ── Section 3: Utility ───────────────────────────────────────────────── -->
+<div class="section">
+  <h2>3 · Utility Metrics</h2>
+  <p>
+    Combined Utility = mean(Readability/10, Meaning/10, ROUGE-1) ; exactly as
+    defined in the paper.  BLEU is reported as a supplementary lexical metric
+    but not included in the combined score.
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Raw Score</th>
+          <th>Normalised (0–1)</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Readability</strong></td>
+          <td>10.00/10</td>
+          <td>1.000</td>
+          <td>LLM judge (GPT-4, 1–10)</td>
+        </tr>
+        <tr>
+          <td><strong>Meaning Preservation</strong></td>
+          <td>8.93/10</td>
+          <td>0.893</td>
+          <td>LLM judge (GPT-4, 1–10)</td>
+        </tr>
+        <tr>
+          <td><strong>ROUGE-1</strong></td>
+          <td>0.931</td>
+          <td>0.931</td>
+          <td>Unigram F1 lexical overlap</td>
+        </tr>
+        <tr style="background:#e8f5e9;">
+          <td><strong>Combined Utility</strong></td>
+          <td colspan="2"><strong>0.941</strong></td>
+          <td>= mean(Readability/10, Meaning/10, ROUGE-1)</td>
+        </tr>
+        <tr>
+          <td><strong>BLEU</strong></td>
+          <td>0.846</td>
+          <td>—</td>
+          <td>Supplementary (not in combined score)</td>
+        </tr>
+      </tbody>
+    </table>
+    
+
+  <h3>Per-Profile Utility</h3>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Profile</th>
+          <th>Readability (raw)</th><th>Readability (norm)</th>
+          <th>Meaning (raw)</th><th>Meaning (norm)</th>
+          <th>ROUGE-1</th><th>BLEU</th>
+          <th>Combined Utility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>31male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.933</td>
+          <td>0.854</td>
+          <td><strong>0.944</strong></td>
+        </tr>
+        
+        <tr>
+          <td>45female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>0.984</td>
+          <td>0.971</td>
+          <td><strong>0.995</strong></td>
+        </tr>
+        
+        <tr>
+          <td>52male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.965</td>
+          <td>0.917</td>
+          <td><strong>0.955</strong></td>
+        </tr>
+        
+        <tr>
+          <td>62male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.934</td>
+          <td>0.815</td>
+          <td><strong>0.945</strong></td>
+        </tr>
+        
+        <tr>
+          <td>29male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>0.885</td>
+          <td>0.777</td>
+          <td><strong>0.962</strong></td>
+        </tr>
+        
+        <tr>
+          <td>21male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.851</td>
+          <td>0.722</td>
+          <td><strong>0.917</strong></td>
+        </tr>
+        
+        <tr>
+          <td>55female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>8.0/10</td>
+          <td>0.800</td>
+          <td>0.909</td>
+          <td>0.833</td>
+          <td><strong>0.903</strong></td>
+        </tr>
+        
+        <tr>
+          <td>29female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.935</td>
+          <td>0.879</td>
+          <td><strong>0.945</strong></td>
+        </tr>
+        
+        <tr>
+          <td>23male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.971</td>
+          <td>0.918</td>
+          <td><strong>0.957</strong></td>
+        </tr>
+        
+        <tr>
+          <td>24female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>8.0/10</td>
+          <td>0.800</td>
+          <td>0.918</td>
+          <td>0.811</td>
+          <td><strong>0.906</strong></td>
+        </tr>
+        
+        <tr>
+          <td>28male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.930</td>
+          <td>0.771</td>
+          <td><strong>0.943</strong></td>
+        </tr>
+        
+        <tr>
+          <td>47female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>8.0/10</td>
+          <td>0.800</td>
+          <td>0.913</td>
+          <td>0.798</td>
+          <td><strong>0.904</strong></td>
+        </tr>
+        
+        <tr>
+          <td>30female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.948</td>
+          <td>0.887</td>
+          <td><strong>0.949</strong></td>
+        </tr>
+        
+        <tr>
+          <td>19male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.961</td>
+          <td>0.894</td>
+          <td><strong>0.954</strong></td>
+        </tr>
+        </tbody>
+    </table>
+    
+</div>
+
+<!-- ── Section 4: Privacy–Utility Tradeoff ─────────────────────────────── -->
+<div class="section">
+  <h2>4 · Privacy–Utility Tradeoff</h2>
+  <p>
+    Each row is one attack variant in the parallel pipeline.
+    <strong>Accuracy reduction</strong> (▼ = good, anonymizer successfully confused
+    the attacker) paired with <strong>combined utility</strong> mirrors the axes of
+    Figure 3a in the paper ; lower accuracy + higher utility = better result.
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Attack Variant</th>
+          <th>Adv. Accuracy (Pre-Anon, Top-3)</th>
+          <th>Adv. Accuracy (Post-Anon, Top-3)</th>
+          <th>Accuracy Reduction</th>
+          <th>Combined Utility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Attack A (GPT-4o Analytical)</strong></td>
+          <td>65.0%</td>
+          <td>55.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+          <td>0.941</td>
+        </tr>
+        
+        <tr>
+          <td><strong>Attack B (Claude Sociolinguistic)</strong></td>
+          <td>65.0%</td>
+          <td>55.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+          <td>0.941</td>
+        </tr>
+        
+        <tr>
+          <td><strong>Merged (A + B)</strong></td>
+          <td>65.0%</td>
+          <td>55.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+          <td>0.941</td>
+        </tr>
+        </tbody>
+    </table>
+    
+</div>
+
+<!-- ── Verdict ─────────────────────────────────────────────────────────── -->
+<div class="verdict">
+  <h2>Key Findings — How the Parallel Attack Affected Anonymization</h2>
+
+  <h3 style="color:#1b5e20; margin-top:16px;">1. Paper's Primary Metric (Top-3 Accuracy) — No Improvement</h3>
+  <p style="margin:6px 0 12px;">
+    Top-3 adversarial accuracy: <strong>65% → 55%</strong> — identical to the single-model baseline.
+    Using two attackers simultaneously did not reduce how often the attacker finds the correct answer within 3 guesses.
+    Both baseline and parallel converge at the same <strong>55% floor</strong>.
+  </p>
+
+  <h3 style="color:#1b5e20; margin-top:16px;">2. Top-1 Accuracy — Small Improvement over Baseline</h3>
+  <p style="margin:6px 0 12px;">
+    GPT-4o Top-1: <strong>50% → 35%</strong> (▼ 15pp) &nbsp;|&nbsp;
+    Claude Top-1: <strong>45% → 30%</strong> (▼ 15pp) &nbsp;|&nbsp;
+    Baseline Top-1: 50% → 40% (▼ 10pp only).
+    The parallel anonymizer, having seen two reasoning chains, reduced first-guess accuracy more aggressively than baseline (−15pp vs −10pp).
+    The attacker's single best guess became less reliable — but it could still find the answer within 3 guesses just as often.
+  </p>
+
+  <h3 style="color:#1b5e20; margin-top:16px;">3. Evidence Rate — The Clearest and Strongest Improvement</h3>
+  <p style="margin:6px 0 12px;">
+    Claude evidence rate: <strong>55% → 30%</strong> (▼ 25pp) &nbsp;|&nbsp;
+    GPT-4o evidence rate: 60% → 50% (▼ 10pp) &nbsp;|&nbsp;
+    Baseline: 60% → 50% (▼ 10pp).
+    This is the most significant result. The parallel anonymizer specifically removed the sociolinguistic signals Claude relies on — cutting its evidence rate by 25pp compared to baseline's 10pp.
+    After anonymization, Claude is mostly guessing rather than reading direct text evidence.
+    However, this did not translate into lower Top-3 accuracy — the attacker still guesses correctly through demographic inference.
+  </p>
+
+  <h3 style="color:#1b5e20; margin-top:16px;">4. Utility — No Tradeoff</h3>
+  <p style="margin:6px 0 12px;">
+    Combined Utility: <strong>0.941</strong> (Readability 10.0/10 &nbsp;·&nbsp; Meaning 8.9/10 &nbsp;·&nbsp; ROUGE-1 0.931).
+    Baseline utility: 0.942 — difference of 0.001, negligible.
+    The parallel pipeline's additional complexity — showing the anonymizer two reasoning chains instead of one — did not damage the text.
+    No privacy–utility tradeoff was necessary.
+  </p>
+
+  <h3 style="color:#1b5e20; margin-top:16px;">Summary</h3>
+  <p style="margin:6px 0 6px; border-top: 1px solid #a5d6a7; padding-top:12px;">
+    The parallel attack made the anonymizer <strong>smarter about what to edit</strong> — it removed more implicit sociolinguistic signals (evidence rate −25pp for Claude) and reduced first-guess accuracy more aggressively (−15pp vs −10pp baseline).
+    However, it could not address signals encoded in <em>how</em> a person writes rather than <em>what</em> they explicitly say — vocabulary register, discourse patterns, topic selection — which keeps Top-3 accuracy at 55% regardless of architecture.
+    Utility was unaffected at 0.941.
+  </p>
+</div>
+
+<p style="color:#aaa; font-size:0.8em; margin-top:40px;">
+  Generated from: .\anonymized_results\parallel_gpt4o_vs_claude_20profiles_v2\
+</p>
+
+</body>
+</html>

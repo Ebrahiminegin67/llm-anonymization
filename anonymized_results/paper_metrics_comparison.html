@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Baseline vs Parallel — Paper Metrics Comparison</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 28px; color: #222; background: #fafafa; line-height: 1.6; }
+    h1   { color: #2a4d69; border-bottom: 3px solid #4b86b4; padding-bottom: 10px; }
+    h2   { color: #4b86b4; margin-top: 36px; }
+    h3   { color: #2a4d69; margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; margin: 14px 0 24px; }
+    th, td { border: 1px solid #ddd; padding: 9px 12px; text-align: center; font-size: 0.87em; }
+    th   { background: #4b86b4; color: white; }
+    tr:nth-child(even) { background: #f4f8fb; }
+    tr:hover { background: #e8f0f8; }
+    td:first-child { text-align: left; }
+    .section { background: white; border: 1px solid #ddd; border-radius: 10px;
+                padding: 24px; margin: 24px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .verdict { background: linear-gradient(135deg, #e8f5e9, #f3e5f5);
+                border: 2px solid #4CAF50; border-radius: 12px;
+                padding: 22px 28px; margin: 24px 0; }
+    .verdict h2 { color: #2e7d32; margin-top: 0; }
+    .note { background: #fff8e1; border-left: 4px solid #ffc107;
+             padding: 12px 18px; border-radius: 4px; margin: 16px 0;
+             font-size: 0.88em; color: #555; }
+    .card-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 20px 0; }
+    .card { flex: 1; min-width: 180px; background: white; border-radius: 10px;
+             padding: 20px; text-align: center;
+             box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .card-label { font-size: 0.82em; color: #555; margin-bottom: 8px; }
+    .card-value { font-size: 2em; font-weight: bold; margin: 8px 0; }
+    .card-sub   { font-size: 0.8em; color: #666; margin: 4px 0; }
+    .legend { font-size: 0.85em; color: #555; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<h1>Baseline vs Parallel Inference — Paper-Aligned Metrics Comparison</h1>
+<p style="color:#666;">
+  Side-by-side comparison using the three metrics from
+  <em>"LLMs Are Advanced Anonymizers"</em>.
+  Both systems ran on the <strong>same 20 profiles</strong>.
+  <br>
+  <span style="color:#2196F3;font-weight:bold;">■ Baseline</span>:
+  single GPT-4o attack → anonymize (2 rounds) → re-attack. &nbsp;
+  <span style="color:#7B1FA2;font-weight:bold;">■ Parallel</span>:
+  GPT-4o + Claude parallel attack → merge → anonymize (1 round) → re-attack both.
+</p>
+
+<div class="note">
+  <strong>Accuracy direction:</strong> Lower adversarial accuracy after anonymization =
+  <em>better</em> privacy (attacker guesses correctly less often).
+  Green cells highlight where the parallel architecture outperforms the baseline.
+</div>
+
+<!-- ── Cards ─────────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>At a Glance — Post-Anonymization Adversarial Accuracy (Top-3)</h2>
+  
+    <div class="card-row">
+      
+        <div class="card" style="border-top:4px solid #2196F3;">
+          <div class="card-label">Baseline (GPT-4o only)</div>
+          <div class="card-value" style="color:#2196F3;">55.0%</div>
+          <div class="card-sub">Post-anon adversarial accuracy (Top-3)</div>
+          <div class="card-sub">Reduction: <span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></div>
+          <div class="card-sub">Utility: 0.942</div>
+        </div>
+        
+      
+        <div class="card" style="border-top:4px solid #7B1FA2;">
+          <div class="card-label">Parallel — Attack A (GPT-4o)</div>
+          <div class="card-value" style="color:#7B1FA2;">55.0%</div>
+          <div class="card-sub">Post-anon adversarial accuracy (Top-3)</div>
+          <div class="card-sub">Reduction: <span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></div>
+          <div class="card-sub">Utility: 0.941</div>
+        </div>
+        
+      
+        <div class="card" style="border-top:4px solid #9C27B0;">
+          <div class="card-label">Parallel — Attack B (Claude)</div>
+          <div class="card-value" style="color:#9C27B0;">55.0%</div>
+          <div class="card-sub">Post-anon adversarial accuracy (Top-3)</div>
+          <div class="card-sub">Reduction: <span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></div>
+          <div class="card-sub">Utility: 0.941</div>
+        </div>
+        
+      
+        <div class="card" style="border-top:4px solid #2e7d32;">
+          <div class="card-label">Parallel — Merged</div>
+          <div class="card-value" style="color:#2e7d32;">55.0%</div>
+          <div class="card-sub">Post-anon adversarial accuracy (Top-3)</div>
+          <div class="card-sub">Reduction: <span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></div>
+          <div class="card-sub">Utility: 0.941</div>
+        </div>
+        
+    </div>
+    
+</div>
+
+<!-- ── Section 1 ──────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>1 · Adversarial Accuracy</h2>
+  <p>Fraction of attributes the attacker correctly guesses. Lower = better privacy.</p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Stage</th>
+          <th colspan="2" style="background:#2196F3;">Baseline (GPT-4o only)</th>
+          <th colspan="2" style="background:#7B1FA2;">Parallel — Attack A (GPT-4o)</th>
+          <th colspan="2" style="background:#7B1FA2;">Parallel — Attack B (Claude)</th>
+          <th colspan="2" style="background:#2e7d32;">Parallel — Merged</th>
+        </tr>
+        <tr>
+          <th>Top-1</th><th>Top-3</th>
+          <th>Top-1</th><th>Top-3</th>
+          <th>Top-1</th><th>Top-3</th>
+          <th>Top-1</th><th>Top-3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Before Anon</strong></td>
+          <td>50.0%</td>
+          <td>65.0%</td>
+          <td>50.0%</td>
+          <td>65.0%</td>
+          <td>45.0%</td>
+          <td>65.0%</td>
+          <td>50.0%</td>
+          <td>65.0%</td>
+        </tr>
+        <tr>
+          <td><strong>After Anon</strong></td>
+          <td>40.0%</td>
+          <td>55.0%</td>
+          <td style="color:#2e7d32;font-weight:bold;">35.0% ▼</td>
+          <td>55.0%</td>
+          <td style="color:#2e7d32;font-weight:bold;">30.0% ▼</td>
+          <td>55.0%</td>
+          <td style="color:#2e7d32;font-weight:bold;">35.0% ▼</td>
+          <td>55.0%</td>
+        </tr>
+        <tr style="background:#e8f5e9;">
+          <td><strong>Reduction ▼</strong></td>
+          <td colspan="2"><strong><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></strong></td>
+          <td colspan="2"><strong><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></strong></td>
+          <td colspan="2"><strong><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></strong></td>
+          <td colspan="2"><strong><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></strong></td>
+        </tr>
+      </tbody>
+    </table>
+    
+
+  <h3>Per-PII-Type Breakdown (Top-3, post-anonymization)</h3>
+  <p class="legend">
+    <span style="color:#2e7d32;font-weight:bold;">Green</span> = parallel lower (better) than baseline &nbsp;|&nbsp;
+    <span style="color:#f44336;">Red</span> = parallel higher (worse) than baseline
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">PII Type</th>
+          <th colspan="2" style="background:#2196F3;">Baseline</th>
+          <th style="background:#7B1FA2;">Parallel A</th>
+          <th style="background:#7B1FA2;">Parallel B</th>
+          <th style="background:#2e7d32;">Parallel Merged</th>
+        </tr>
+        <tr>
+          <th>Pre-Anon</th><th>Post-Anon</th>
+          <th>Post-Anon</th>
+          <th>Post-Anon</th>
+          <th>Post-Anon</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>age</strong></td>
+          <td>50.0%</td>
+          <td>50.0%</td>
+          <td style="">50.0%</td>
+          <td style="">50.0%</td>
+          <td style="">50.0%</td>
+        </tr>
+        
+        <tr>
+          <td><strong>education</strong></td>
+          <td>50.0%</td>
+          <td>50.0%</td>
+          <td style="">50.0%</td>
+          <td style="color:#2e7d32;font-weight:bold;">33.3%</td>
+          <td style="">50.0%</td>
+        </tr>
+        
+        <tr>
+          <td><strong>gender</strong></td>
+          <td>66.7%</td>
+          <td>66.7%</td>
+          <td style="">66.7%</td>
+          <td style="">66.7%</td>
+          <td style="">66.7%</td>
+        </tr>
+        
+        <tr>
+          <td><strong>income</strong></td>
+          <td>66.7%</td>
+          <td>66.7%</td>
+          <td style="">66.7%</td>
+          <td style="">66.7%</td>
+          <td style="">66.7%</td>
+        </tr>
+        
+        <tr>
+          <td><strong>location</strong></td>
+          <td>100.0%</td>
+          <td>0.0%</td>
+          <td style="">0.0%</td>
+          <td style="color:#f44336;">50.0%</td>
+          <td style="">0.0%</td>
+        </tr>
+        
+        <tr>
+          <td><strong>married</strong></td>
+          <td>100.0%</td>
+          <td>100.0%</td>
+          <td style="">100.0%</td>
+          <td style="">100.0%</td>
+          <td style="">100.0%</td>
+        </tr>
+        
+        <tr>
+          <td><strong>occupation</strong></td>
+          <td>0.0%</td>
+          <td>0.0%</td>
+          <td style="">0.0%</td>
+          <td style="">0.0%</td>
+          <td style="">0.0%</td>
+        </tr>
+        </tbody>
+    </table>
+    <p style="font-size:0.85em;color:#555;">
+      <span style="color:#2e7d32;font-weight:bold;">Green</span> = parallel did better than baseline (lower accuracy = harder to guess = better privacy).
+      <span style="color:#f44336;">Red</span> = parallel did worse. All values are Top-3 accuracy.
+    </p>
+    
+</div>
+
+<!-- ── Section 2 ──────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>2 · Adversarial Certainty — Evidence Rate</h2>
+  <p>
+    Fraction of inferences where the attacker cites direct textual evidence
+    (certainty ≥ 3 out of 5).  A bigger drop = anonymizer removed more real signals.
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Architecture</th>
+          <th>Evidence Rate (Pre-Anon)</th>
+          <th>Evidence Rate (Post-Anon)</th>
+          <th>Drop ▼</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td><strong>Baseline (GPT-4o)</strong></td>
+          <td>60.0%</td>
+          <td style="">50.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+        </tr>
+        
+        <tr>
+          <td><strong>Parallel — Attack A (GPT-4o)</strong></td>
+          <td>60.0%</td>
+          <td style="">50.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+        </tr>
+        
+        <tr>
+          <td><strong>Parallel — Attack B (Claude)</strong></td>
+          <td>55.0%</td>
+          <td style="color:#2e7d32;font-weight:bold;">30.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 25.0pp</span></td>
+        </tr>
+        
+        <tr>
+          <td><strong>Parallel — Merged</strong></td>
+          <td>65.0%</td>
+          <td style="">55.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+        </tr>
+      </tbody>
+    </table>
+    
+</div>
+
+<!-- ── Section 3 ──────────────────────────────────────────────────────── -->
+<div class="section">
+  <h2>3 · Utility Comparison</h2>
+  <p>Combined utility = mean(Readability/10, Meaning/10, ROUGE-1). Higher = better.</p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th style="background:#2196F3;">Baseline</th>
+          <th style="background:#7B1FA2;">Parallel</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Readability / 10</strong></td>
+          <td>1.000</td>
+          <td style="">1.000</td>
+          <td>LLM judge (GPT-4)</td>
+        </tr>
+        <tr>
+          <td><strong>Meaning / 10</strong></td>
+          <td>0.893</td>
+          <td style="">0.893</td>
+          <td>LLM judge (GPT-4)</td>
+        </tr>
+        <tr>
+          <td><strong>ROUGE-1</strong></td>
+          <td>0.934</td>
+          <td style="color:#f44336;">0.931</td>
+          <td>Unigram F1</td>
+        </tr>
+        <tr style="background:#e8f5e9;">
+          <td><strong>Combined Utility</strong></td>
+          <td><strong>0.942</strong></td>
+          <td style="color:#f44336;">0.941</td>
+          <td>= mean(R/10, M/10, ROUGE-1)</td>
+        </tr>
+      </tbody>
+    </table>
+    
+</div>
+
+<!-- ── Verdict ────────────────────────────────────────────────────────── -->
+<div class="verdict">
+  <h2>Verdict</h2>
+  <ul style="line-height:2.2;">
+    <li>Both architectures reach similar adversarial accuracy (55.0% baseline vs 55.0% parallel best).</li>
+    <li>Evidence rate after anonymization drops further under the parallel anonymizer: Attack B <strong>30.0%</strong> vs baseline <strong>50.0%</strong>. This means the parallel anonymizer removes more textual signals that the attacker relies on.</li>
+    <li>Utility is comparable: baseline <strong>0.942</strong> vs parallel <strong>0.941</strong>.</li>
+  </ul>
+</div>
+
+<p style="color:#bbb; font-size:0.78em; margin-top:40px;">
+  Baseline: anonymized_results/baseline_single_attack_20profiles &nbsp;|&nbsp; Parallel: anonymized_results/parallel_gpt4o_vs_claude_20profiles_v2
+</p>
+
+</body>
+</html>

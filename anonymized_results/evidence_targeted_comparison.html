@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Evidence-Targeted Anonymization: Four-Architecture Comparison</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         max-width: 1200px; margin: 0 auto; padding: 20px; color: #212121; }
+  h1 { color: #1a237e; border-bottom: 3px solid #1a237e; padding-bottom: 8px; }
+  h2 { color: #283593; margin-top: 32px; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+  th, td { border: 1px solid #ccc; padding: 10px 14px; text-align: center; }
+  th { background: #e8eaf6; color: #1a237e; }
+  tr:nth-child(even) { background: #f5f5f5; }
+  .highlight-row { background: #fff8e1 !important; }
+  .cards { display: flex; gap: 16px; flex-wrap: wrap; margin: 20px 0; }
+  .card { flex: 1; min-width: 200px; border-radius: 8px; padding: 16px;
+           box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+  .card.baseline  { background: #fce4ec; border-top: 4px solid #e91e63; }
+  .card.parallel  { background: #e3f2fd; border-top: 4px solid #1976d2; }
+  .card.sequential { background: #e8f5e9; border-top: 4px solid #388e3c; }
+  .card.evidence  { background: #ede7f6; border-top: 4px solid #7b1fa2; }
+  .card-title { font-size: 1.1em; font-weight: bold; margin-bottom: 4px; }
+  .card-subtitle { font-size: 0.8em; color: #555; margin-bottom: 12px; }
+  .metric-row { display: flex; justify-content: space-between; padding: 4px 0;
+                 border-bottom: 1px solid rgba(0,0,0,.06); }
+  .val { font-weight: bold; }
+  .highlight { color: #7b1fa2; font-weight: bold; font-size: 1.1em; }
+  .verdict { background: #f3e5f5; border-left: 4px solid #7b1fa2;
+              padding: 16px; border-radius: 4px; margin: 20px 0; }
+  .verdict h3 { margin-top: 0; color: #4a148c; }
+  .method-box { background: #ede7f6; border-radius: 6px; padding: 14px;
+                 margin: 12px 0; border-left: 4px solid #7b1fa2; }
+</style>
+</head>
+<body>
+<h1>Evidence-Targeted Anonymization: Four-Architecture Comparison</h1>
+<p>Paper-aligned metrics from <em>LLMs Are Advanced Anonymizers</em>.
+   Lower adversarial accuracy = stronger privacy protection.</p>
+
+<div class="method-box">
+  <strong>New contribution — Evidence-Targeted Anonymizer:</strong>
+  instead of giving the anonymizer generic inference summaries (Type / Inference / Guess),
+  the anonymizer receives both attackers' full reasoning chains and is explicitly instructed
+  to (1) identify the exact phrases the attackers are using as evidence, then (2) surgically
+  replace only those phrases. The hypothesis: explicit evidence targeting should yield lower
+  post-anonymization adversarial accuracy than generic anonymization, even with the same
+  attack architecture.
+</div>
+
+<h2>Summary Cards</h2>
+
+    <div class="cards">
+      <div class="card baseline">
+        <div class="card-title">Baseline</div>
+        <div class="card-subtitle">Single GPT-4o attack<br>Generic anonymizer (2 rounds)</div>
+        <div class="metric-row"><span>Adv. Accuracy (post)</span><span class="val">55.0%</span></div>
+        <div class="metric-row"><span>Evidence Rate (post)</span><span class="val">50.0%</span></div>
+        <div class="metric-row"><span>Combined Utility</span><span class="val">0.942</span></div>
+      </div>
+      <div class="card parallel">
+        <div class="card-title">Parallel</div>
+        <div class="card-subtitle">GPT-4o + Claude parallel<br>Generic anonymizer</div>
+        <div class="metric-row"><span>Adv. Accuracy (post)</span><span class="val">55.0%</span></div>
+        <div class="metric-row"><span>Evidence Rate (post)</span><span class="val">55.0%</span></div>
+        <div class="metric-row"><span>Combined Utility</span><span class="val">0.941</span></div>
+      </div>
+      <div class="card sequential">
+        <div class="card-title">Sequential</div>
+        <div class="card-subtitle">GPT-4o then Claude<br>Generic anonymizer</div>
+        <div class="metric-row"><span>Adv. Accuracy (post)</span><span class="val">55.0%</span></div>
+        <div class="metric-row"><span>Evidence Rate (post)</span><span class="val">50.0%</span></div>
+        <div class="metric-row"><span>Combined Utility</span><span class="val">0.937</span></div>
+      </div>
+      <div class="card evidence">
+        <div class="card-title">Evidence-Targeted</div>
+        <div class="card-subtitle">GPT-4o + Claude parallel<br>Evidence-targeted anonymizer &#x2605;</div>
+        <div class="metric-row"><span>Adv. Accuracy (post)</span><span class="val highlight">55.0%</span></div>
+        <div class="metric-row"><span>Evidence Rate (post)</span><span class="val highlight">55.0%</span></div>
+        <div class="metric-row"><span>Combined Utility</span><span class="val highlight">0.936</span></div>
+      </div>
+    </div>
+    
+
+<h2>Full Metrics Comparison</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Baseline</th>
+          <th>Parallel</th>
+          <th>Sequential</th>
+          <th>Evid-Targeted</th>
+          <th>vs Baseline</th>
+          <th>vs Parallel</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Pre-anon Accuracy (Top-3)</strong></td>
+          <td>65.0%</td>
+          <td>65.0%</td>
+          <td>65.0%</td>
+          <td>60.0%</td>
+          <td style="color:#c62828;font-weight:bold">+-5.0pp</td>
+          <td style="color:#c62828;font-weight:bold">+-5.0pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Post-anon Accuracy (Top-3)</strong><br><small>Lower = better privacy</small></td>
+          <td>55.0%</td>
+          <td>55.0%</td>
+          <td>55.0%</td>
+          <td><strong>55.0%</strong></td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Post-anon Evidence Rate</strong><br><small>Lower = less textual evidence</small></td>
+          <td>50.0%</td>
+          <td>55.0%</td>
+          <td>50.0%</td>
+          <td><strong>55.0%</strong></td>
+          <td style="color:#c62828;font-weight:bold">++5.0pp</td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+        </tr>
+        <tr>
+          <td><strong>Combined Utility</strong><br><small>Higher = better text quality</small></td>
+          <td>0.942</td>
+          <td>0.941</td>
+          <td>0.937</td>
+          <td><strong>0.936</strong></td>
+          <td style="color:#c62828;font-weight:bold">+-0.6pp</td>
+          <td style="color:#c62828;font-weight:bold">+-0.5pp</td>
+        </tr>
+      </tbody>
+    </table>
+    
+
+<h2>Per-PII-Type Accuracy (post-anonymization, Top-3)</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>PII Type</th>
+          <th>Baseline</th>
+          <th>Parallel</th>
+          <th>Sequential</th>
+          <th>Evid-Targeted</th>
+          <th>vs Baseline</th>
+          <th>vs Parallel</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>age</td>
+          <td>50.0%</td>
+          <td>50.0%</td>
+          <td>50.0%</td>
+          <td><strong>50.0%</strong></td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+        </tr>
+        <tr>
+          <td>education</td>
+          <td>50.0%</td>
+          <td>50.0%</td>
+          <td>50.0%</td>
+          <td><strong>50.0%</strong></td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+        </tr>
+        <tr>
+          <td>gender</td>
+          <td>66.7%</td>
+          <td>66.7%</td>
+          <td>66.7%</td>
+          <td><strong>66.7%</strong></td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+        </tr>
+        <tr>
+          <td>income</td>
+          <td>66.7%</td>
+          <td>66.7%</td>
+          <td>66.7%</td>
+          <td><strong>66.7%</strong></td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+        </tr>
+        <tr>
+          <td>location</td>
+          <td>0.0%</td>
+          <td>0.0%</td>
+          <td>0.0%</td>
+          <td><strong>0.0%</strong></td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+        </tr>
+        <tr>
+          <td>married</td>
+          <td>100.0%</td>
+          <td>100.0%</td>
+          <td>100.0%</td>
+          <td><strong>100.0%</strong></td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+        </tr>
+        <tr>
+          <td>occupation</td>
+          <td>0.0%</td>
+          <td>0.0%</td>
+          <td>0.0%</td>
+          <td><strong>0.0%</strong></td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+          <td style="color:#888;font-weight:bold">+0.0pp</td>
+        </tr></tbody>
+    </table>
+    
+
+
+    <div class="verdict">
+      <h3>Thesis Verdict: Does Evidence-Targeted Anonymization Improve Privacy?</h3>
+      <ul>
+        <li><b style='color:#888'>NO DIFFERENCE vs Baseline</b>: 0.0pp — evidence-targeted anonymizer performs similarly to generic anonymizer on this dataset.</li>
+        <li><b style='color:#888'>NO DIFFERENCE vs Parallel (same attack)</b>: 0.0pp — evidence-targeted anonymizer performs similarly to generic anonymizer on this dataset.</li>
+      </ul>
+      <p><b>Note on utility:</b>
+        Evid-targeted utility = 0.936 vs baseline = 0.942.
+        Utility is maintained — surgical targeting preserved text quality.
+      </p>
+      <p><b>Sample size caveat:</b>
+        n=20 profiles, one PII attribute each = 20 data points.
+        A 10pp accuracy difference requires ~100 profiles for 80% statistical power (two-proportion z-test).
+        Treat all differences as directional trends unless the gap exceeds ~15pp.
+      </p>
+    </div>
+    
+
+<hr>
+<p style="color:#888;font-size:.85em">
+  Metrics: Adversarial Accuracy = fraction of ground-truth PII correctly guessed (Top-3);
+  Evidence Rate = fraction with direct textual evidence (certainty &ge; 3);
+  Combined Utility = mean(Readability/10, Meaning/10, ROUGE-1 F1).
+</p>
+</body>
+</html>

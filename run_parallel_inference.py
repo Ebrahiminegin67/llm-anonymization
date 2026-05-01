@@ -47,6 +47,7 @@ from src.anonymized.anonymized import (
 )
 from src.anonymized.anonymizers.anonymizer_factory import get_anonymizer
 from src.prompts import Prompt
+from evaluate_parallel_paper_metrics import run as run_paper_metrics
 
 
 ##### Alternative inference prompt strategies for the parallel attack exploration #####
@@ -435,16 +436,17 @@ def compare_attacks(
 #### Pipeline with parallel inference ####
 
 
-def run_parallel_inference_pipeline(cfg: Config) -> None:
+def run_parallel_inference_pipeline(cfg: Config, num_rounds: int = 1) -> None:
     """
     Modified pipeline that uses parallel inference attacks.
 
     Pipeline:
     1. Parallel Inference (A + B) on original text
     2. Compare & merge inferences
-    3. Anonymize using merged (stronger) inferences
-    4. Score utility
-    5. Parallel Inference (A + B) on anonymized text
+    Round loop (num_rounds times):
+      3. Anonymize using merged inferences
+      4. Score utility
+      5. Parallel Inference (A + B) on anonymized text; store merged for next round
     6. Compare: did anonymization defeat both attacks?
     """
     assert isinstance(cfg.task_config, AnonymizationConfig)
@@ -462,6 +464,7 @@ def run_parallel_inference_pipeline(cfg: Config) -> None:
 
     print(f"\nLoaded {len(profiles)} profiles")
     print(f"Output directory: {out_dir}")
+    print(f"Rounds: {num_rounds}")
 
     # ══════════════════════════════════════════════════════════════════════
     # STAGE 1: Parallel inference on ORIGINAL text
@@ -479,7 +482,6 @@ def run_parallel_inference_pipeline(cfg: Config) -> None:
     # Store the merged inference into profiles for anonymization
     for profile in profiles:
         merged = results_original[profile.username]["merged"]
-        # Store merged as the inference (anonymizer reads this)
         profile.get_latest_comments().predictions[
             cfg.task_config.inference_model.name
         ] = merged
@@ -496,49 +498,43 @@ def run_parallel_inference_pipeline(cfg: Config) -> None:
             f.write(json.dumps(profile.to_json()) + "\n")
 
     # ══════════════════════════════════════════════════════════════════════
-    # STAGE 2: Anonymize using merged (stronger) inferences
+    # ROUNDS LOOP: anonymize → utility → re-attack
     # ══════════════════════════════════════════════════════════════════════
-    print("\n" + "=" * 60)
-    print("STAGE 2: Anonymization (informed by merged parallel inferences)")
-    print("=" * 60)
+    results_anonymized = None
+    for round_idx in range(num_rounds):
+        print("\n" + "=" * 60)
+        print(f"ROUND {round_idx + 1}/{num_rounds}")
+        print("=" * 60)
 
-    anonymize(profiles, anonymizer, cfg)
+        print(f"\n  [Round {round_idx+1}] Anonymization (informed by merged parallel inferences)")
+        anonymize(profiles, anonymizer, cfg)
 
-    # ══════════════════════════════════════════════════════════════════════
-    # STAGE 3: Utility scoring
-    # ══════════════════════════════════════════════════════════════════════
-    print("\n" + "=" * 60)
-    print("STAGE 3: Utility Scoring")
-    print("=" * 60)
+        print(f"\n  [Round {round_idx+1}] Utility Scoring")
+        score_utility(profiles, util_model, cfg)
 
-    score_utility(profiles, util_model, cfg)
+        print(f"\n  [Round {round_idx+1}] Parallel Inference on Anonymized Text")
+        results_anonymized = run_parallel_inference(
+            profiles, model_a, model_b, cfg,
+            prompt_strategy_a=create_prompts_analytical,
+            prompt_strategy_b=create_prompts_creative,
+        )
 
-    # ══════════════════════════════════════════════════════════════════════
-    # STAGE 4: Parallel inference on ANONYMIZED text
-    # ══════════════════════════════════════════════════════════════════════
-    print("\n" + "=" * 60)
-    print("STAGE 4: Parallel Inference on Anonymized Text")
-    print("=" * 60)
+        # Store merged so the next round's anonymize() sees updated inferences
+        for profile in profiles:
+            merged = results_anonymized[profile.username]["merged"]
+            profile.get_latest_comments().predictions[
+                cfg.task_config.inference_model.name
+            ] = merged
+            profile.get_latest_comments().predictions[
+                cfg.task_config.inference_model.name
+            ]["full_answer"] = "PARALLEL_MERGED"
 
-    results_anonymized = run_parallel_inference(
-        profiles, model_a, model_b, cfg,
-        prompt_strategy_a=create_prompts_analytical,
-        prompt_strategy_b=create_prompts_creative,
-    )
-
-    # Store post-anonymization inferences
-    for profile in profiles:
-        merged = results_anonymized[profile.username]["merged"]
-        profile.get_latest_comments().predictions[
-            cfg.task_config.inference_model.name
-        ] = merged
+        with open(f"{out_dir}/inference_{round_idx + 1}.jsonl", "a") as f:
+            for profile in profiles:
+                f.write(json.dumps(profile.to_json()) + "\n")
 
     with open(f"{out_dir}/parallel_inference_anonymized.json", "w") as f:
         json.dump(results_anonymized, f, indent=2, default=str)
-
-    for profile in profiles:
-        with open(f"{out_dir}/inference_1.jsonl", "a") as f:
-            f.write(json.dumps(profile.to_json()) + "\n")
 
     # ══════════════════════════════════════════════════════════════════════
     # ANALYSIS: Compare results
@@ -563,6 +559,9 @@ def run_parallel_inference_pipeline(cfg: Config) -> None:
 
     # ── Print summary ─────────────────────────────────────────────────────
     print_analysis_summary(full_analysis)
+
+    # ── Paper-aligned metrics (Adversarial Accuracy, Certainty, Utility) ──
+    run_paper_metrics(out_dir)
 
 
 def compare_before_after(
@@ -903,6 +902,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Only generate report from existing results (skip inference)",
     )
+    parser.add_argument(
+        "--paper_metrics_only",
+        action="store_true",
+        help="Only compute paper-aligned metrics from existing results (skip inference)",
+    )
     args = parser.parse_args()
 
     cfg = read_config_from_yaml(args.config_path)
@@ -917,7 +921,9 @@ if __name__ == "__main__":
     except ImportError:
         pass
 
-    if args.report_only:
+    if args.paper_metrics_only:
+        run_paper_metrics(cfg.task_config.outpath)
+    elif args.report_only:
         generate_parallel_report(cfg.task_config.outpath)
     else:
         run_parallel_inference_pipeline(cfg)

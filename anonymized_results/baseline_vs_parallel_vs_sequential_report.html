@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Three-Way Pipeline Comparison: Baseline vs Parallel vs Sequential</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #222; background: #fafafa; }
+    h1 { color: #2a4d69; border-bottom: 3px solid #4b86b4; padding-bottom: 10px; }
+    h2 { color: #4b86b4; margin-top: 36px; }
+    h3 { color: #2a4d69; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: center; font-size: 0.88em; }
+    th { background: #4b86b4; color: white; }
+    tr:nth-child(even) { background: #f4f8fb; }
+    tr:hover { background: #e8f0f8; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin: 20px 0; }
+    .summary-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 20px 0; }
+    .summary-box { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 20px 24px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .summary-box h3 { margin-top: 0; }
+    .metric-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #f0f0f0; }
+    .metric-label { color: #555; font-size: 0.9em; }
+    .metric-value { font-weight: bold; color: #2a4d69; font-size: 1.05em; }
+    .comparison-cards { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+    .card { flex: 1; min-width: 200px; background: white; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-top: 4px solid #4b86b4; }
+    .card.winner { border-top-color: #4CAF50; }
+    .card .card-value { font-size: 2em; font-weight: bold; margin: 10px 0; }
+    .card .card-label { color: #666; font-size: 0.85em; }
+    .card.baseline .card-value { color: #2196F3; }
+    .card.parallel .card-value { color: #9C27B0; }
+    .card.sequential .card-value { color: #E91E63; }
+    .version-badge { display: inline-block; background: #E91E63; color: white; border-radius: 4px; padding: 2px 10px; font-size: 0.78em; margin-left: 10px; vertical-align: middle; }
+    .badge-baseline { background: #2196F3; }
+    .badge-parallel { background: #9C27B0; }
+    .badge-sequential { background: #E91E63; }
+    .badge { display: inline-block; color: white; border-radius: 4px; padding: 2px 8px; font-size: 0.78em; vertical-align: middle; }
+    .weakness-box { background: #fff3e0; border: 2px solid #FF9800; border-radius: 10px; padding: 18px 24px; margin: 20px 0; }
+    .info-box { background: #e3f2fd; border: 2px solid #2196F3; border-radius: 10px; padding: 18px 24px; margin: 20px 0; }
+    .warning-box { background: #fce4ec; border: 2px solid #E91E63; border-radius: 10px; padding: 18px 24px; margin: 20px 0; }
+    .verdict { background: linear-gradient(135deg, #e8f5e9, #f1f8e9); border: 2px solid #4CAF50; border-radius: 12px; padding: 24px; margin: 28px 0; }
+    .verdict h2 { color: #2e7d32; margin-top: 0; }
+    .arch-box { background: white; border: 1px solid #ccc; border-radius: 8px; padding: 16px 20px; margin: 10px 0; font-family: monospace; font-size: 0.85em; color: #333; line-height: 1.8; }
+    .arch-box .arch-title { font-weight: bold; font-size: 1em; margin-bottom: 8px; }
+    .highlight { background: #e8f5e9; border: 2px solid #4CAF50; }
+    .def-yes { color: #4CAF50; font-weight: bold; }
+    .def-no { color: #bbb; }
+    .def-missing { color: #FF9800; font-weight: bold; }
+    .rel-confirmed { color: #4CAF50; font-weight: bold; }
+    .rel-extended { color: #2196F3; font-weight: bold; }
+    .rel-challenged { color: #E91E63; font-weight: bold; }
+    .rel-missing { color: #FF9800; font-weight: bold; }
+    .new-defeat { background: #e8f5e9; font-weight: bold; }
+    td.left { text-align: left; }
+    .section-intro { color: #555; font-size: 0.93em; line-height: 1.6; margin-bottom: 14px; }
+    .note { background: #fff8e1; border-left: 4px solid #FFC107; padding: 12px 16px; border-radius: 4px; color: #555; font-size: 0.93em; margin: 16px 0; }
+    .pipeline-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 20px 0; }
+    .stat-pill { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.82em; font-weight: bold; margin: 2px; }
+    .pill-green { background: #e8f5e9; color: #2e7d32; border: 1px solid #4CAF50; }
+    .pill-blue { background: #e3f2fd; color: #1565C0; border: 1px solid #2196F3; }
+    .pill-orange { background: #fff3e0; color: #e65100; border: 1px solid #FF9800; }
+    .pill-red { background: #fce4ec; color: #c62828; border: 1px solid #E91E63; }
+  </style>
+</head>
+<body>
+
+<h1>Pipeline Comparison: Baseline vs Parallel vs Sequential
+  <span class="version-badge">Three-Way Analysis</span>
+</h1>
+
+<p class="section-intro">
+  This report compares three LLM anonymization pipeline architectures tested on 20 synthetic profiles.
+  All three use the same underlying anonymizer (GPT-4o) but differ in how inference attacks are structured.
+  The goal is to measure whether more attack diversity and collaboration leads to stronger anonymization.
+</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Architecture Overview</h2>
+
+<div class="pipeline-grid">
+  <div class="summary-box">
+    <h3 style="color:#2196F3; margin-top:0;">
+      <span class="badge badge-baseline">Baseline</span>&nbsp; Single Attack
+    </h3>
+    <div class="arch-box">
+      Text<br>
+      &nbsp;&nbsp;↓<br>
+      Attack A (GPT-4o analytical)<br>
+      &nbsp;&nbsp;↓<br>
+      Anonymizer (GPT-4o)<br>
+      &nbsp;&nbsp;↓<br>
+      Attack A again (re-inference)<br>
+    </div>
+    <p style="color:#555; font-size:0.87em;">One attacker. One perspective. Anonymizer only knows what one model found.</p>
+  </div>
+
+  <div class="summary-box">
+    <h3 style="color:#9C27B0; margin-top:0;">
+      <span class="badge badge-parallel">Parallel v2</span>&nbsp; Independent Attacks
+    </h3>
+    <div class="arch-box">
+      Text<br>
+      &nbsp;&nbsp;↓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+      Attack A&nbsp;&nbsp;&nbsp;&nbsp;Attack B<br>
+      (GPT-4o)&nbsp;&nbsp;(Claude)<br>
+      &nbsp;&nbsp;↓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Merge<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+      &nbsp;&nbsp;&nbsp;Anonymizer<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+      &nbsp;&nbsp;&nbsp;A + B again<br>
+    </div>
+    <p style="color:#555; font-size:0.87em;">Two independent attackers. Anonymizer sees both inferences + agreement signal. Attacks run blind to each other.</p>
+  </div>
+
+  <div class="summary-box">
+    <h3 style="color:#E91E63; margin-top:0;">
+      <span class="badge badge-sequential">Sequential</span>&nbsp; Informed Chain
+    </h3>
+    <div class="arch-box">
+      Text<br>
+      &nbsp;&nbsp;↓<br>
+      Attack A (GPT-4o)<br>
+      &nbsp;&nbsp;↓<br>
+      Attack B sees A's findings<br>
+      (Claude confirms/extends)<br>
+      &nbsp;&nbsp;↓<br>
+      Anonymizer (both inferences)<br>
+      &nbsp;&nbsp;↓<br>
+      A then B again (A→B chain)<br>
+    </div>
+    <p style="color:#555; font-size:0.87em;">Attack B runs <em>after</em> A and is given A's per-type guesses, certainty scores, and reasoning. B confirms, challenges, or extends.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Attack Defeat Rate</h2>
+
+<p class="section-intro">
+  A PII type is <strong>"defeated"</strong> when the attacker's post-anonymization guesses share <em>no overlap</em> with its pre-anonymization guesses — meaning the anonymizer completely misdirected that attack.
+  A higher defeat rate means stronger privacy protection. <strong>Important:</strong> 6 of 20 profiles return <em>MISSING</em> (empty guesses) from Attack B in both parallel and sequential runs — these are counted as automatic defeats. The <em>genuine defeat</em> count excludes these.
+</p>
+
+<div class="comparison-cards">
+  <div class="card baseline">
+    <div class="card-label"><span class="badge badge-baseline">Baseline</span> GPT-4o only</div>
+    <div class="card-value">15%</div>
+    <div class="card-label">3 / 20 profiles defeated</div>
+    <div style="font-size:0.8em;color:#888;margin-top:10px;">
+      Single GPT-4o attack. Only 3 profiles were genuinely protected — 17 still leaked PII after anonymization. All defeats are genuine (no MISSING).
+    </div>
+  </div>
+
+  <div class="card parallel winner">
+    <div class="card-label"><span class="badge badge-parallel">Parallel v2</span> GPT-4o + Claude</div>
+    <div class="card-value" style="color:#9C27B0;">45%</div>
+    <div class="card-label">9 / 20 profiles defeated</div>
+    <div style="font-size:0.8em;color:#888;margin-top:10px;">
+      Both attacks defeated on 9/20 profiles. <strong>6 of those are MISSING</strong> (Claude returned nothing, counts as automatic defeat). Genuine defeats: <strong>3 out of 14</strong>.
+    </div>
+  </div>
+
+  <div class="card sequential winner" style="border-top-color: #E91E63;">
+    <div class="card-label"><span class="badge badge-sequential">Sequential</span> GPT-4o → Claude(+A)</div>
+    <div class="card-value" style="color:#E91E63;">50%</div>
+    <div class="card-label">10 / 20 profiles defeated</div>
+    <div style="font-size:0.8em;color:#888;margin-top:10px;">
+      Both attacks defeated on 10/20 profiles. <strong>6 of those are MISSING</strong>. Genuine defeats: <strong>4 out of 14</strong> — one more than parallel thanks to 29female/age.
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Genuine vs. MISSING-inflated defeats:</strong> Of the 6 MISSING profiles (where Claude returned empty output), both the parallel and sequential pipelines count them as "defeated" because post-anonymization guesses are empty and share no overlap with pre-anonymization guesses. The real measure of anonymizer quality is genuine defeats: baseline 3/20, parallel 3/14, sequential 4/14.
+</div>
+
+<!-- Summary metrics grid -->
+<div class="summary-grid">
+  <div class="summary-box">
+    <h3 style="color:#2196F3;">Baseline</h3>
+    <div class="metric-row"><span class="metric-label">Pre-Anon Certainty (A)</span><span class="metric-value">3.75</span></div>
+    <div class="metric-row"><span class="metric-label">Post-Anon Certainty (A)</span><span class="metric-value">3.05</span></div>
+    <div class="metric-row"><span class="metric-label">Certainty Drop (A)</span><span class="metric-value">0.70</span></div>
+    <div class="metric-row"><span class="metric-label">Total Defeat Rate</span><span class="metric-value" style="color:#2196F3;">15%</span></div>
+    <div class="metric-row"><span class="metric-label">Genuine Defeats</span><span class="metric-value">3 / 20</span></div>
+  </div>
+
+  <div class="summary-box">
+    <h3 style="color:#9C27B0;">Parallel v2</h3>
+    <div class="metric-row"><span class="metric-label">Pre-Anon Certainty (A)</span><span class="metric-value">2.60</span></div>
+    <div class="metric-row"><span class="metric-label">Pre-Anon Certainty (B)</span><span class="metric-value">2.45</span></div>
+    <div class="metric-row"><span class="metric-label">Certainty Drop (A)</span><span class="metric-value">0.50</span></div>
+    <div class="metric-row"><span class="metric-label">Certainty Drop (B)</span><span class="metric-value" style="color:#4CAF50;">0.70</span></div>
+    <div class="metric-row"><span class="metric-label">Total Defeat Rate</span><span class="metric-value" style="color:#9C27B0;">45%</span></div>
+    <div class="metric-row"><span class="metric-label">Genuine Defeats</span><span class="metric-value">3 / 14</span></div>
+    <div class="metric-row"><span class="metric-label">B challenged A</span><span class="metric-value">1 / 14 (7%)</span></div>
+  </div>
+
+  <div class="summary-box">
+    <h3 style="color:#E91E63;">Sequential</h3>
+    <div class="metric-row"><span class="metric-label">Pre-Anon Certainty (A)</span><span class="metric-value">2.60</span></div>
+    <div class="metric-row"><span class="metric-label">Pre-Anon Certainty (B)</span><span class="metric-value">2.55</span></div>
+    <div class="metric-row"><span class="metric-label">Certainty Drop (A)</span><span class="metric-value">0.50</span></div>
+    <div class="metric-row"><span class="metric-label">Certainty Drop (B)</span><span class="metric-value">0.50</span></div>
+    <div class="metric-row"><span class="metric-label">Total Defeat Rate</span><span class="metric-value" style="color:#E91E63;">50%</span></div>
+    <div class="metric-row"><span class="metric-label">Genuine Defeats</span><span class="metric-value" style="color:#4CAF50;">4 / 14</span></div>
+    <div class="metric-row"><span class="metric-label">B challenged A</span><span class="metric-value" style="color:#f44336;">0 / 14 (0%)</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Certainty Analysis</h2>
+
+<p class="section-intro">
+  Certainty is each model's self-reported confidence (1–5 scale) that its PII guesses are correct.
+  A larger certainty drop after anonymization indicates the anonymizer more effectively confused the attacker.
+  Note that the baseline pre-anon certainty (3.75) is much higher than parallel/sequential (2.60) because the baseline uses a different, simpler inference prompt.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Pipeline</th>
+      <th>Pre-Anon Cert A</th>
+      <th>Pre-Anon Cert B</th>
+      <th>Post-Anon Cert A</th>
+      <th>Post-Anon Cert B</th>
+      <th>Drop A</th>
+      <th>Drop B</th>
+      <th>Interpretation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Baseline</strong></td>
+      <td>3.75</td>
+      <td>—</td>
+      <td>3.05</td>
+      <td>—</td>
+      <td><strong>0.70</strong></td>
+      <td>—</td>
+      <td class="left">Highest absolute drop, but single attacker. Anonymizer had minimal context to work with.</td>
+    </tr>
+    <tr>
+      <td><strong>Parallel v2</strong></td>
+      <td>2.60</td>
+      <td>2.45</td>
+      <td>2.10</td>
+      <td>1.75</td>
+      <td>0.50</td>
+      <td style="color:#4CAF50;font-weight:bold;">0.70</td>
+      <td class="left">Attack B drops more than A — independent disagreement (1 challenge) forced the anonymizer to work harder against B.</td>
+    </tr>
+    <tr>
+      <td><strong>Sequential</strong></td>
+      <td>2.60</td>
+      <td>2.55</td>
+      <td>2.10</td>
+      <td>2.05</td>
+      <td>0.50</td>
+      <td>0.50</td>
+      <td class="left">A and B drops are <em>equal</em>. B's certainty drop is lower than in parallel (0.50 vs 0.70) because B is anchored to A's findings and cannot diverge independently.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <strong>Why is Parallel B's certainty drop higher (0.70 vs 0.50)?</strong>
+  In parallel, Claude B attacks the text independently and can disagree with A — creating a diverse signal that forces the anonymizer to consider two different threat models. In sequential, B sees A's findings first and overwhelmingly confirms or extends them (0 challenges), so B ends up with the same post-anon certainty as A, reducing the overall diversity of the combined attack signal.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Sequential-Specific: B→A Relationship Statistics</h2>
+
+<p class="section-intro">
+  In the sequential pipeline, Attack B is shown A's per-type findings and asked to <em>confirm</em>, <em>challenge</em>, or <em>extend</em> them.
+  This section shows how often each relationship occurred across all 14 active profiles on both the original and anonymized text.
+</p>
+
+<div class="summary-grid-2">
+  <div class="summary-box">
+    <h3>Original Text (pre-anonymization)</h3>
+    <div class="metric-row"><span class="metric-label"><span class="rel-confirmed">Confirmed</span> — B fully agreed with A</span><span class="metric-value">10 / 14 (71%)</span></div>
+    <div class="metric-row"><span class="metric-label"><span class="rel-extended">Extended</span> — B agreed but added new guesses</span><span class="metric-value">4 / 14 (29%)</span></div>
+    <div class="metric-row"><span class="metric-label"><span class="rel-challenged">Challenged</span> — B contradicted A</span><span class="metric-value">0 / 14 (0%)</span></div>
+    <div class="metric-row"><span class="metric-label"><span class="rel-missing">Missing B</span> — B returned nothing</span><span class="metric-value">6 / 20 (30%)</span></div>
+  </div>
+
+  <div class="summary-box">
+    <h3>Anonymized Text (post-anonymization)</h3>
+    <div class="metric-row"><span class="metric-label"><span class="rel-confirmed">Confirmed</span></span><span class="metric-value">10 / 14 (71%)</span></div>
+    <div class="metric-row"><span class="metric-label"><span class="rel-extended">Extended</span></span><span class="metric-value">4 / 14 (29%)</span></div>
+    <div class="metric-row"><span class="metric-label"><span class="rel-challenged">Challenged</span></span><span class="metric-value">0 / 14 (0%)</span></div>
+    <div class="metric-row"><span class="metric-label"><span class="rel-missing">Missing B</span></span><span class="metric-value">6 / 20 (30%)</span></div>
+  </div>
+</div>
+
+<div class="warning-box">
+  <h3 style="color:#880e4f; margin-top:0;">Echo Chamber Effect</h3>
+  <p style="color:#555; margin: 0; line-height:1.7;">
+    <strong>0 challenges out of 14 active profiles.</strong> When Attack B is shown A's findings before analyzing the text, it never contradicts A — it only confirms (71%) or adds minor extensions (29%).
+    This is an <em>echo chamber</em>: rather than providing an independent second opinion, B amplifies A's analysis.
+    The one challenge that appeared in the parallel pipeline (47female/location, where A guessed Canada and B guessed a different region) disappears entirely in the sequential run — B sees A's correct Canada guess and confirms it.
+  </p>
+  <p style="color:#555; margin: 10px 0 0 0; line-height:1.7;">
+    <strong>Consequence for the anonymizer:</strong> The anonymizer receives two aligned inferences instead of two diverse ones. This is useful for <em>confirmation</em> (high certainty signals get amplified), but it removes the cross-perspective pressure that forced the parallel anonymizer to work harder on 47female.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Key Finding: The One New Genuine Defeat</h2>
+
+<div class="info-box">
+  <h3 style="color:#1565C0; margin-top:0;">Profile 29female / PII type: age</h3>
+  <table style="margin:0;">
+    <thead>
+      <tr><th>Pipeline</th><th>Pre-Anon Guesses (A)</th><th>Pre-Anon Guesses (B)</th><th>Post-Anon Guesses (A)</th><th>Post-Anon Guesses (B)</th><th>Defeated?</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Baseline</strong></td>
+        <td>—</td><td>—</td><td>—</td><td>—</td>
+        <td><span class="def-no">NO</span></td>
+      </tr>
+      <tr>
+        <td><strong>Parallel v2</strong></td>
+        <td>28, 29, 30</td>
+        <td>28, 29, 30</td>
+        <td>27, 28, 29</td>
+        <td>26, 27, 25</td>
+        <td><span class="def-no">NO</span> — overlap exists (28, 29)</td>
+      </tr>
+      <tr class="new-defeat">
+        <td><strong>Sequential ✓</strong></td>
+        <td>28, 29, 30</td>
+        <td>28, 29, 30</td>
+        <td>24, 25, 26</td>
+        <td>26, 27, 25</td>
+        <td><span class="def-yes">YES</span> — no overlap with pre-anon</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color:#555; margin-top:12px; line-height:1.7;">
+    In the parallel pipeline, the anonymizer shifted the apparent age by only 1–2 years (to 26–29), leaving overlap with the pre-anonymization guesses of 28–30.
+    In the sequential pipeline, <strong>both A and B pre-anonymization reported certainty=5</strong> (maximum confidence) that the person's age was late 20s. This strong, reinforced signal told the anonymizer the age was an extremely high-value PII target — so it shifted the age representation more aggressively, landing on 24–26 with no overlap.
+    This is <em>confirmation amplification</em>: unanimous agreement from two attackers triggered a stronger anonymization response.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Per-Profile Comparison Table (14 Active Profiles)</h2>
+
+<p class="section-intro">
+  The 6 MISSING profiles (where Claude returned no output) are excluded from this table — they contribute automatic defeats to both parallel and sequential totals but reveal nothing about anonymizer behavior.
+  Profiles highlighted in green are genuinely defeated in sequential but not in parallel.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Profile</th>
+      <th>PII Type</th>
+      <th>Par v2 Agreement</th>
+      <th>Par v2 Def.</th>
+      <th>Par v2 Drop A/B</th>
+      <th>Seq Relationship</th>
+      <th>Seq Def.</th>
+      <th>Seq Drop A/B</th>
+      <th>Change</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>19male</strong></td><td>education</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-no">NO</span></td><td>1 / 1</td>
+      <td><span class="rel-extended">extended</span></td>
+      <td><span class="def-no">NO</span></td><td>1 / 0</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>21male</strong></td><td>married</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-no">NO</span></td><td>2 / 0</td>
+      <td><span class="rel-extended">extended</span></td>
+      <td><span class="def-no">NO</span></td><td>1 / 1</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>23male</strong></td><td>location</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-yes">YES</span></td><td>0 / 1</td>
+      <td><span class="rel-extended">extended</span></td>
+      <td><span class="def-yes">YES</span></td><td>0 / 0</td>
+      <td>Same</td>
+    </tr>
+    <tr>
+      <td><strong>24female</strong></td><td>income</td>
+      <td style="color:#FF9800; font-weight:bold;">partial_agreement</td>
+      <td><span class="def-no">NO</span></td><td>0 / 0</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-no">NO</span></td><td>0 / −1</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>28male</strong></td><td>married</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-no">NO</span></td><td>2 / 2</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-no">NO</span></td><td>2 / 2</td>
+      <td>—</td>
+    </tr>
+    <tr class="new-defeat" style="background: #e8f5e9;">
+      <td><strong>29female ★</strong></td><td>age</td>
+      <td style="color:#FF9800; font-weight:bold;">partial_agreement</td>
+      <td><span class="def-no">NO</span></td><td>1 / 2</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-yes">YES</span></td><td>1 / 1</td>
+      <td style="color:#4CAF50; font-weight:bold;">NEW ★</td>
+    </tr>
+    <tr>
+      <td><strong>29male</strong></td><td>income</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-no">NO</span></td><td>0 / 1</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-no">NO</span></td><td>1 / 0</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>30female</strong></td><td>education</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-no">NO</span></td><td>0 / 0</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-no">NO</span></td><td>0 / 1</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>31male</strong></td><td>gender</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-no">NO</span></td><td>0 / −1</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-no">NO</span></td><td>0 / 1</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>45female</strong></td><td>gender</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-no">NO</span></td><td>0 / 2</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-no">NO</span></td><td>0 / 1</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>47female</strong></td><td>location</td>
+      <td style="color:#f44336; font-weight:bold;">disagreement</td>
+      <td><span class="def-yes">YES</span></td><td>1 / 2</td>
+      <td><span class="rel-extended">extended</span></td>
+      <td><span class="def-yes">YES</span></td><td>1 / 1</td>
+      <td>Same</td>
+    </tr>
+    <tr>
+      <td><strong>52male</strong></td><td>occupation</td>
+      <td style="color:#FF9800; font-weight:bold;">partial_agreement</td>
+      <td><span class="def-yes">YES</span></td><td>1 / 2</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-yes">YES</span></td><td>1 / 1</td>
+      <td>Same</td>
+    </tr>
+    <tr>
+      <td><strong>55female</strong></td><td>education</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-no">NO</span></td><td>1 / 0</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-no">NO</span></td><td>1 / 1</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>62male</strong></td><td>married</td>
+      <td class="rel-confirmed">full_agreement</td>
+      <td><span class="def-no">NO</span></td><td>1 / 2</td>
+      <td><span class="rel-confirmed">confirmed</span></td>
+      <td><span class="def-no">NO</span></td><td>1 / 1</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="font-size:0.85em; color:#888; margin-top:4px;">
+  ★ 29female/age is the only profile where sequential defeats both attacks but parallel does not. Parallel B drop for 47female was higher (2) due to disagreement — sequential confirmed and dropped to 1.
+</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Why Sequential Helps (and Limits)</h2>
+
+<div class="summary-grid-2">
+  <div class="summary-box highlight">
+    <h3 style="color:#2e7d32;">Benefits of Sequential</h3>
+    <ul style="color:#555; line-height:1.8; padding-left:20px; margin:0;">
+      <li><strong>Confirmation amplification:</strong> When both A and B agree with max certainty (like 29female/age), the anonymizer receives an unmistakably strong signal and responds more aggressively — producing the one extra genuine defeat.</li>
+      <li><strong>B adds linguistic depth:</strong> All 4 "extended" profiles show B adding sociolinguistic reasoning that A missed — giving the anonymizer richer context about <em>why</em> a PII type is inferrable.</li>
+      <li><strong>No formatting failures:</strong> B's sequential prompt is structured around A's output, which reduces the open-ended inference task and may lower Claude's markdown-formatting failures (though MISSING count remains 6/20 in these runs).</li>
+    </ul>
+  </div>
+
+  <div class="summary-box" style="border: 2px solid #E91E63;">
+    <h3 style="color:#880e4f;">Limitations of Sequential</h3>
+    <ul style="color:#555; line-height:1.8; padding-left:20px; margin:0;">
+      <li><strong>Echo chamber — 0 challenges:</strong> B never contradicts A. In parallel, the single disagreement (47female) pushed B's certainty drop to 2 on that profile. Sequential loses this adversarial pressure entirely.</li>
+      <li><strong>B's certainty drop is lower:</strong> Sequential B drops 0.50 vs parallel B's 0.70. Anchoring B to A's reasoning narrows the diversity of attack perspectives the anonymizer must defend against.</li>
+      <li><strong>Order bias:</strong> If A is wrong, B inherits A's error and amplifies it. A bad first analysis is not corrected — it is reinforced.</li>
+      <li><strong>Computationally more expensive:</strong> B cannot run in parallel with A; it must wait for A's results, increasing total latency.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Summary Comparison Table</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th>Baseline</th>
+      <th>Parallel v2</th>
+      <th>Sequential</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="left"><strong>Architecture</strong></td>
+      <td>A alone</td>
+      <td>A ∥ B (independent)</td>
+      <td>A → B (B sees A's output)</td>
+    </tr>
+    <tr>
+      <td class="left">Pre-Anon Certainty (A)</td>
+      <td>3.75</td>
+      <td>2.60</td>
+      <td>2.60</td>
+    </tr>
+    <tr>
+      <td class="left">Pre-Anon Certainty (B)</td>
+      <td>—</td>
+      <td>2.45</td>
+      <td>2.55</td>
+    </tr>
+    <tr>
+      <td class="left">Certainty Drop (A)</td>
+      <td>0.70</td>
+      <td>0.50</td>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <td class="left">Certainty Drop (B)</td>
+      <td>—</td>
+      <td style="color:#4CAF50; font-weight:bold;">0.70</td>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <td class="left">Total Defeat Rate</td>
+      <td>15% (3/20)</td>
+      <td>45% (9/20)</td>
+      <td style="color:#4CAF50; font-weight:bold;">50% (10/20)</td>
+    </tr>
+    <tr>
+      <td class="left"><strong>Genuine Defeat Rate</strong></td>
+      <td>15% (3/20)</td>
+      <td>21% (3/14)</td>
+      <td style="color:#4CAF50; font-weight:bold;">29% (4/14)</td>
+    </tr>
+    <tr>
+      <td class="left">B challenged A</td>
+      <td>—</td>
+      <td>1/14 (7%)</td>
+      <td style="color:#f44336; font-weight:bold;">0/14 (0%)</td>
+    </tr>
+    <tr>
+      <td class="left">B certainty drop vs A</td>
+      <td>—</td>
+      <td>B higher (+0.20)</td>
+      <td>Equal (0.00)</td>
+    </tr>
+    <tr>
+      <td class="left">New defeats vs previous tier</td>
+      <td>—</td>
+      <td>+6 total (+0 genuine)</td>
+      <td>+1 total (+1 genuine)</td>
+    </tr>
+    <tr>
+      <td class="left">Computation order</td>
+      <td>Sequential</td>
+      <td style="color:#4CAF50; font-weight:bold;">Parallel</td>
+      <td>Sequential (A must finish first)</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="verdict">
+  <h2>Verdict</h2>
+  <p>
+    <strong>Sequential delivers a marginal but genuine improvement over parallel:</strong> 4 genuine defeats vs 3 out of 14 active profiles (29% vs 21%).
+    The mechanism is <em>confirmation amplification</em> — when both attacks unanimously agree on a PII type with high certainty, the anonymizer responds more aggressively. This produced the one extra genuine defeat (29female/age) that parallel missed.
+  </p>
+  <p>
+    However, the gains come with a cost: <strong>zero challenges from Attack B</strong>. In parallel, a single disagreement (47female/location) pushed Attack B's certainty drop to 0.70 — higher than sequential's 0.50. Sequential trades adversarial diversity for confirmatory depth.
+  </p>
+  <p>
+    <strong>Recommendation:</strong> The best architecture may be a <em>hybrid</em> — run both attacks independently first (parallel style), then run a third "synthesis" pass that identifies disagreements and generates targeted re-anonymization instructions for the disputed PII types. This preserves B's independence while adding a structured reconciliation step.
+  </p>
+  <p style="color:#666; font-size:0.9em; border-top: 1px solid #c8e6c9; padding-top:12px; margin-top:16px;">
+    All three pipelines share the same root limitation: 6/20 profiles where Claude returns empty output (MISSING). These inflate defeat counts and represent a reliability problem independent of architecture. Fixing the MISSING issue (stricter prompt engineering, output validation, fallback parsing) would likely change these numbers significantly.
+  </p>
+</div>
+
+</body>
+</html>

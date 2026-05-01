@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Paper-Aligned Metrics — Sequential GPT-4o × GPT-4o (Explicit → Implicit)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 28px; color: #222; background: #fafafa; line-height: 1.55; }
+    h1 { color: #2a4d69; border-bottom: 3px solid #4b86b4; padding-bottom: 10px; }
+    h2 { color: #4b86b4; margin-top: 36px; }
+    h3 { color: #2a4d69; }
+    table { border-collapse: collapse; width: 100%; margin: 14px 0 24px; }
+    th, td { border: 1px solid #ddd; padding: 9px 12px; text-align: center; font-size: 0.87em; }
+    th { background: #4b86b4; color: white; }
+    tr:nth-child(even) { background: #f4f8fb; }
+    tr:hover { background: #e8f0f8; }
+    .section { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 24px;
+                margin: 24px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .metric-chip { display: inline-block; background: #f0f5f9; border: 1px solid #4b86b4;
+                    border-radius: 8px; padding: 10px 18px; margin: 6px; text-align: center; }
+    .chip-val { font-size: 1.6em; font-weight: bold; color: #2a4d69; }
+    .chip-lbl { font-size: 0.8em; color: #555; }
+    .verdict { background: linear-gradient(135deg, #e8f5e9, #f1f8e9); border: 2px solid #4CAF50;
+                border-radius: 12px; padding: 22px 28px; margin: 24px 0; }
+    .verdict h2 { color: #2e7d32; margin-top: 0; }
+    .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 12px 18px;
+             border-radius: 4px; margin: 16px 0; font-size: 0.9em; color: #555; }
+    td:first-child { text-align: left; }
+  </style>
+</head>
+<body>
+<div style="background:#f3e5f5;border-left:4px solid #7b1fa2;padding:14px 18px;margin:16px 0;border-radius:4px;"><strong>Pipeline 4 — Sequential GPT-4o × GPT-4o.</strong> Both attacks use GPT-4o. Attack A (explicit prompt) runs first on the original text. Attack B (implicit prompt) then runs on the same text <em>with Attack A's findings injected into its prompt</em> — it confirms, challenges, or extends A's conclusions. No Claude is involved.</div>
+
+<h1>Paper-Aligned Metrics: LLMs Are Advanced Anonymizers</h1>
+<p style="color:#666;">
+  Applying the three core metrics from <em>"LLMs Are Advanced Anonymizers"</em> to the
+  <strong>parallel inference pipeline</strong> (GPT-4o analytical + Claude sociolinguistic).
+  Evaluated on <strong>20 PII-type instances</strong> from 14 profiles.
+</p>
+
+<div class="note">
+  <strong>Accuracy method:</strong> String-similarity matching (Jaro–Winkler + normalised
+  label matching for ordinal types) — the same approach used in the paper's automated
+  evaluation. No LLM judge is called here, which gives a <em>conservative lower bound</em>
+  on true accuracy; the paper additionally uses GPT-4 as a judge for edge cases, which
+  would push accuracy slightly higher.
+</div>
+
+<!-- ── Section 1: Adversarial Accuracy ─────────────────────────────────── -->
+<div class="section">
+  <h2>1 · Adversarial Accuracy</h2>
+  <p>
+    For each (profile, PII-type) pair the attacker's top-k guesses are checked against
+    the ground-truth label.  <strong>Top-1</strong> = first guess only;
+    <strong>Top-3</strong> = correct if any of the three guesses matches.
+    Lower accuracy after anonymization = better privacy protection.
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Stage</th>
+          <th colspan="2">Attack A (GPT-4o Analytical)</th>
+          <th colspan="2">Attack B (GPT-4o Sociolinguistic/Implicit, informed by A)</th>
+          <th colspan="2">Accumulated (A + B)</th>
+        </tr>
+        <tr>
+          <th>Top-1</th><th>Top-3</th>
+          <th>Top-1</th><th>Top-3</th>
+          <th>Top-1</th><th>Top-3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Before Anonymization</strong></td><td>50.0%</td><td>65.0%</td><td>45.0%</td><td>65.0%</td><td>50.0%</td><td>65.0%</td></tr>
+        <tr><td><strong>After Anonymization</strong></td><td>40.0%</td><td>55.0%</td><td>25.0%</td><td>55.0%</td><td>40.0%</td><td>55.0%</td></tr>
+      </tbody>
+    </table>
+    
+
+  <h3>Per-PII-Type Breakdown (Top-3 Accuracy)</h3>
+  
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">PII Type</th>
+          <th colspan="3">Before Anonymization (Top-3)</th>
+          <th colspan="3">After Anonymization (Top-3)</th>
+        </tr>
+        <tr>
+          <th>Attack A</th><th>Attack B</th><th>Accumulated (A + B)</th>
+          <th>Attack A</th><th>Attack B</th><th>Accumulated (A + B)</th>
+        </tr>
+      </thead>
+      <tbody><tr><td><strong>age</strong></td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td></tr><tr><td><strong>education</strong></td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td></tr><tr><td><strong>gender</strong></td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td></tr><tr><td><strong>income</strong></td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td></tr><tr><td><strong>location</strong></td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr><tr><td><strong>married</strong></td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td></tr><tr><td><strong>occupation</strong></td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr></tbody>
+    </table>
+    
+</div>
+
+<!-- ── Section 2: Adversarial Certainty ────────────────────────────────── -->
+<div class="section">
+  <h2>2 · Adversarial Certainty — Evidence Rate</h2>
+  <p>
+    The attacker self-scores certainty 1–5.  Following the paper's binary framing
+    (0 = statistical guess / 1 = direct textual evidence), we map certainty ≥ 3
+    as "has evidence".  The <strong>evidence rate</strong> is the fraction of
+    inferences citing real signal in the text.  A drop after anonymization means
+    the anonymizer successfully removed textual evidence.
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Stage</th>
+          <th colspan="2">Attack A</th>
+          <th colspan="2">Attack B</th>
+          <th colspan="2">Accumulated (A + B)</th>
+        </tr>
+        <tr>
+          <th>Evidence Rate</th><th>Avg Certainty</th>
+          <th>Evidence Rate</th><th>Avg Certainty</th>
+          <th>Evidence Rate</th><th>Avg Certainty</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Before Anonymization</strong></td><td>60.0%</td><td>2.65/5</td><td>70.0%</td><td>2.85/5</td><td>70.0%</td><td>2.85/5</td></tr>
+        <tr><td><strong>After Anonymization</strong></td><td>55.0%</td><td>2.15/5</td><td>60.0%</td><td>2.60/5</td><td>60.0%</td><td>2.60/5</td></tr>
+      </tbody>
+    </table>
+    
+</div>
+
+<!-- ── Section 3: Utility ───────────────────────────────────────────────── -->
+<div class="section">
+  <h2>3 · Utility Metrics</h2>
+  <p>
+    Combined Utility = mean(Readability/10, Meaning/10, ROUGE-1) — exactly as
+    defined in the paper.  BLEU is reported as a supplementary lexical metric
+    but not included in the combined score.
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Raw Score</th>
+          <th>Normalised (0–1)</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Readability</strong></td>
+          <td>10.00/10</td>
+          <td>1.000</td>
+          <td>LLM judge (GPT-4, 1–10)</td>
+        </tr>
+        <tr>
+          <td><strong>Meaning Preservation</strong></td>
+          <td>8.79/10</td>
+          <td>0.879</td>
+          <td>LLM judge (GPT-4, 1–10)</td>
+        </tr>
+        <tr>
+          <td><strong>ROUGE-1</strong></td>
+          <td>0.935</td>
+          <td>0.935</td>
+          <td>Unigram F1 lexical overlap</td>
+        </tr>
+        <tr style="background:#e8f5e9;">
+          <td><strong>Combined Utility</strong></td>
+          <td colspan="2"><strong>0.938</strong></td>
+          <td>= mean(Readability/10, Meaning/10, ROUGE-1)</td>
+        </tr>
+        <tr>
+          <td><strong>BLEU</strong></td>
+          <td>0.851</td>
+          <td>—</td>
+          <td>Supplementary (not in combined score)</td>
+        </tr>
+      </tbody>
+    </table>
+    
+
+  <h3>Per-Profile Utility</h3>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Profile</th>
+          <th>Readability (raw)</th><th>Readability (norm)</th>
+          <th>Meaning (raw)</th><th>Meaning (norm)</th>
+          <th>ROUGE-1</th><th>BLEU</th>
+          <th>Combined Utility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>31male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.967</td>
+          <td>0.931</td>
+          <td><strong>0.956</strong></td>
+        </tr>
+        
+        <tr>
+          <td>45female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.936</td>
+          <td>0.851</td>
+          <td><strong>0.945</strong></td>
+        </tr>
+        
+        <tr>
+          <td>52male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>8.0/10</td>
+          <td>0.800</td>
+          <td>0.934</td>
+          <td>0.844</td>
+          <td><strong>0.911</strong></td>
+        </tr>
+        
+        <tr>
+          <td>62male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.902</td>
+          <td>0.705</td>
+          <td><strong>0.934</strong></td>
+        </tr>
+        
+        <tr>
+          <td>29male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.884</td>
+          <td>0.759</td>
+          <td><strong>0.928</strong></td>
+        </tr>
+        
+        <tr>
+          <td>21male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.925</td>
+          <td>0.860</td>
+          <td><strong>0.942</strong></td>
+        </tr>
+        
+        <tr>
+          <td>55female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>8.0/10</td>
+          <td>0.800</td>
+          <td>0.904</td>
+          <td>0.824</td>
+          <td><strong>0.901</strong></td>
+        </tr>
+        
+        <tr>
+          <td>29female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.958</td>
+          <td>0.899</td>
+          <td><strong>0.953</strong></td>
+        </tr>
+        
+        <tr>
+          <td>23male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.972</td>
+          <td>0.954</td>
+          <td><strong>0.957</strong></td>
+        </tr>
+        
+        <tr>
+          <td>24female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.918</td>
+          <td>0.811</td>
+          <td><strong>0.939</strong></td>
+        </tr>
+        
+        <tr>
+          <td>28male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.946</td>
+          <td>0.828</td>
+          <td><strong>0.949</strong></td>
+        </tr>
+        
+        <tr>
+          <td>47female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.955</td>
+          <td>0.912</td>
+          <td><strong>0.952</strong></td>
+        </tr>
+        
+        <tr>
+          <td>30female</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>9.0/10</td>
+          <td>0.900</td>
+          <td>0.954</td>
+          <td>0.913</td>
+          <td><strong>0.951</strong></td>
+        </tr>
+        
+        <tr>
+          <td>19male</td>
+          <td>10.0/10</td>
+          <td>1.000</td>
+          <td>8.0/10</td>
+          <td>0.800</td>
+          <td>0.931</td>
+          <td>0.823</td>
+          <td><strong>0.910</strong></td>
+        </tr>
+        </tbody>
+    </table>
+    
+</div>
+
+<!-- ── Section 4: Privacy–Utility Tradeoff ─────────────────────────────── -->
+<div class="section">
+  <h2>4 · Privacy–Utility Tradeoff</h2>
+  <p>
+    Each row is one attack variant in the parallel pipeline.
+    <strong>Accuracy reduction</strong> (▼ = good, anonymizer successfully confused
+    the attacker) paired with <strong>combined utility</strong> mirrors the axes of
+    Figure 3a in the paper — lower accuracy + higher utility = better result.
+  </p>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Attack Variant</th>
+          <th>Adv. Accuracy (Pre-Anon, Top-3)</th>
+          <th>Adv. Accuracy (Post-Anon, Top-3)</th>
+          <th>Accuracy Reduction</th>
+          <th>Combined Utility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Attack A (GPT-4o Analytical)</strong></td>
+          <td>65.0%</td>
+          <td>55.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+          <td>0.938</td>
+        </tr>
+        
+        <tr>
+          <td><strong>Attack B (GPT-4o Sociolinguistic/Implicit, informed by A)</strong></td>
+          <td>65.0%</td>
+          <td>55.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+          <td>0.938</td>
+        </tr>
+        
+        <tr>
+          <td><strong>Accumulated (A + B) (A + B)</strong></td>
+          <td>65.0%</td>
+          <td>55.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+          <td>0.938</td>
+        </tr>
+        </tbody>
+    </table>
+    
+</div>
+
+<!-- ── Verdict ─────────────────────────────────────────────────────────── -->
+<div class="verdict">
+  <h2>Key Findings</h2>
+  <ul style="line-height:2;">
+    <li>
+      <strong>Adversarial accuracy (Attack A, post-anon, top-3):</strong>
+      55.0%
+      &nbsp;|&nbsp;
+      <strong>Attack B:</strong>
+      55.0%
+      &nbsp;|&nbsp;
+      <strong>Accumulated (A + B) view:</strong>
+      55.0%
+    </li>
+    <li>
+      <strong>Combined utility score:</strong>
+      0.938
+      (Readability 10.0/10 &nbsp;·&nbsp;
+       Meaning 8.8/10 &nbsp;·&nbsp;
+       ROUGE-1 0.935)
+    </li>
+    <li>
+      <strong>Evidence rate drop (Attack A):</strong>
+      60.0%
+      → 55.0%
+      &nbsp;&nbsp;
+      <strong>Attack B:</strong>
+      70.0%
+      → 60.0%
+    </li>
+  </ul>
+</div>
+
+<p style="color:#aaa; font-size:0.8em; margin-top:40px;">
+  Generated from: anonymized_results/sequential_gpt4o_explicit_implicit_20profiles
+</p>
+
+</body>
+</html>

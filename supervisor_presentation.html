@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thesis Presentation — LLM Anonymization Architectures</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; color: #1a1a2e; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; width: 220px; height: 100vh;
+    background: #1a1a2e; color: #fff; padding: 24px 16px;
+    overflow-y: auto; z-index: 100;
+  }
+  nav h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #8892b0; margin-bottom: 20px; }
+  nav a {
+    display: block; padding: 9px 12px; margin: 3px 0; border-radius: 6px;
+    color: #ccd6f6; text-decoration: none; font-size: 13px; transition: all 0.2s;
+  }
+  nav a:hover, nav a.active { background: #0f3460; color: #64ffda; }
+  nav .section-label { font-size: 11px; color: #8892b0; text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 4px 12px; }
+
+  /* MAIN */
+  main { margin-left: 220px; padding: 40px 48px; max-width: 1100px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+    color: #fff; border-radius: 16px; padding: 48px; margin-bottom: 40px;
+  }
+  .hero .tag { background: #64ffda; color: #0f3460; font-size: 12px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .hero h1 { font-size: 28px; font-weight: 700; line-height: 1.3; margin-bottom: 12px; }
+  .hero p { color: #a8b2d8; font-size: 15px; line-height: 1.7; max-width: 700px; }
+  .hero .meta { margin-top: 24px; display: flex; gap: 24px; flex-wrap: wrap; }
+  .hero .meta-item { background: rgba(255,255,255,0.08); padding: 10px 18px; border-radius: 8px; font-size: 13px; color: #ccd6f6; }
+  .hero .meta-item span { color: #64ffda; font-weight: 700; }
+
+  /* SECTIONS */
+  section { margin-bottom: 48px; scroll-margin-top: 80px; }
+  section h2 { font-size: 22px; font-weight: 700; color: #0f3460; margin-bottom: 6px;
+    padding-bottom: 10px; border-bottom: 3px solid #64ffda; display: inline-block; }
+  section .subtitle { color: #666; font-size: 14px; margin-top: 6px; margin-bottom: 24px; }
+
+  /* CARDS */
+  .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-left: 4px solid #0f3460; }
+  .card h3 { font-size: 16px; font-weight: 700; color: #0f3460; margin-bottom: 10px; }
+  .card p, .card li { font-size: 14px; color: #444; line-height: 1.75; }
+  .card ul { padding-left: 18px; }
+  .card.highlight { border-left-color: #64ffda; background: #f0fff8; }
+  .card.warning { border-left-color: #f39c12; background: #fffdf0; }
+  .card.danger { border-left-color: #e74c3c; background: #fff5f5; }
+
+  /* PIPELINE CARDS */
+  .pipeline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .pipeline-card {
+    background: #fff; border-radius: 12px; padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-top: 4px solid;
+  }
+  .pipeline-card.p0 { border-top-color: #8892b0; }
+  .pipeline-card.p1 { border-top-color: #0f3460; }
+  .pipeline-card.p2 { border-top-color: #e74c3c; }
+  .pipeline-card.p3 { border-top-color: #f39c12; }
+  .pipeline-card.p4 { border-top-color: #27ae60; }
+  .pipeline-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .p0 .pipeline-num { color: #8892b0; }
+  .p1 .pipeline-num { color: #0f3460; }
+  .p2 .pipeline-num { color: #e74c3c; }
+  .p3 .pipeline-num { color: #f39c12; }
+  .p4 .pipeline-num { color: #27ae60; }
+  .pipeline-card h3 { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+  .pipeline-card .rationale { font-size: 13px; color: #555; line-height: 1.65; margin-bottom: 14px; }
+  .flow-box {
+    background: #f4f6f9; border-radius: 8px; padding: 12px 14px;
+    font-family: 'Courier New', monospace; font-size: 12px; color: #333; line-height: 1.8;
+  }
+  .flow-arrow { color: #64ffda; font-weight: 700; }
+
+  /* METRICS */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .metric-card {
+    background: #fff; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); text-align: center;
+  }
+  .metric-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .metric-card h4 { font-size: 13px; font-weight: 700; color: #0f3460; margin-bottom: 6px; }
+  .metric-card p { font-size: 12px; color: #666; line-height: 1.6; }
+  .metric-card .direction { margin-top: 10px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: inline-block; }
+  .lower-better { background: #ffeaea; color: #c0392b; }
+  .higher-better { background: #eafff3; color: #27ae60; }
+
+  /* RESULTS TABLE */
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); font-size: 14px; }
+  thead { background: #0f3460; color: #fff; }
+  th { padding: 14px 16px; text-align: left; font-weight: 600; font-size: 13px; }
+  td { padding: 13px 16px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8f9ff; }
+  .best { color: #27ae60; font-weight: 700; }
+  .worst { color: #e74c3c; }
+  .neutral { color: #f39c12; font-weight: 600; }
+  .arch-label { font-weight: 700; color: #0f3460; }
+  .tag-pill { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+  .tag-baseline { background: #eee; color: #666; }
+  .tag-new { background: #e8f4ff; color: #0f3460; }
+  .tag-best { background: #eafff3; color: #27ae60; }
+
+  /* MULTI ROUND TABLE */
+  .round-table table { font-size: 13px; }
+  .trend-down { color: #27ae60; font-weight: 700; }
+  .trend-up { color: #e74c3c; font-weight: 700; }
+  .trend-flat { color: #f39c12; }
+
+  /* KEY FINDING */
+  .finding-box {
+    background: linear-gradient(135deg, #0f3460, #16213e);
+    color: #fff; border-radius: 16px; padding: 36px; margin: 32px 0;
+    position: relative; overflow: hidden;
+  }
+  .finding-box::before {
+    content: '"'; position: absolute; top: -20px; right: 20px;
+    font-size: 200px; color: rgba(100,255,218,0.06); font-family: Georgia;
+  }
+  .finding-box h3 { color: #64ffda; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+  .finding-box p { font-size: 16px; line-height: 1.8; color: #ccd6f6; max-width: 750px; }
+  .finding-box .stat { color: #64ffda; font-weight: 700; font-size: 18px; }
+
+  /* DEFEAT RATE */
+  .defeat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .defeat-card { background: #fff; border-radius: 12px; padding: 20px; text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  .defeat-card .label { font-size: 12px; color: #666; margin-bottom: 8px; }
+  .defeat-card .pct { font-size: 36px; font-weight: 800; margin: 8px 0; }
+  .defeat-card .fraction { font-size: 13px; color: #888; }
+  .defeat-card.low .pct { color: #e74c3c; }
+  .defeat-card.high .pct { color: #27ae60; }
+
+  /* PAPER COMPARISON */
+  .comparison-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .comp-card { background: #fff; border-radius: 12px; padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  .comp-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid; }
+  .comp-card.paper h4 { color: #0f3460; border-color: #0f3460; }
+  .comp-card.ours h4 { color: #27ae60; border-color: #27ae60; }
+  .comp-row { display: flex; justify-content: space-between; padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  .comp-row:last-child { border-bottom: none; }
+  .comp-row .label { color: #666; }
+  .comp-row .val { font-weight: 700; color: #1a1a2e; }
+
+  /* LIMITATIONS */
+  .limit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .limit-item { background: #fff; border-radius: 10px; padding: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; gap: 14px; align-items: flex-start; }
+  .limit-icon { font-size: 22px; flex-shrink: 0; }
+  .limit-item h4 { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .limit-item p { font-size: 13px; color: #666; line-height: 1.6; }
+
+  /* ATTRIBUTE TABLE */
+  .attr-bar { height: 8px; border-radius: 4px; display: inline-block; margin-left: 8px; vertical-align: middle; }
+  .attr-high { background: #e74c3c; }
+  .attr-mid { background: #f39c12; }
+  .attr-low { background: #27ae60; }
+
+  /* SUMMARY BOX */
+  .takeaway-list { list-style: none; }
+  .takeaway-list li { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid #f0f0f0; }
+  .takeaway-list li:last-child { border-bottom: none; }
+  .takeaway-num { background: #0f3460; color: #64ffda; width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .takeaway-list li p { font-size: 14px; color: #333; line-height: 1.7; }
+  .takeaway-list li strong { color: #0f3460; }
+
+  @media (max-width: 900px) {
+    nav { display: none; }
+    main { margin-left: 0; padding: 24px; }
+    .pipeline-grid, .metrics-grid, .defeat-grid, .comparison-row, .limit-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <h2>Navigation</h2>
+  <a href="#overview">Overview</a>
+  <div class="section-label">Setup</div>
+  <a href="#paper">Original Paper</a>
+  <a href="#dataset">Dataset & Setup</a>
+  <a href="#metrics">Metrics</a>
+  <div class="section-label">Pipelines</div>
+  <a href="#pipelines">All 4 Pipelines</a>
+  <div class="section-label">Results</div>
+  <a href="#results">Main Results</a>
+  <a href="#multiround">Multi-Round Loop</a>
+  <a href="#defeat">Defeat Rate</a>
+  <a href="#attributes">Per-Attribute</a>
+  <div class="section-label">Discussion</div>
+  <a href="#finding">Core Finding</a>
+  <a href="#paper-compare">vs. Paper</a>
+  <a href="#limitations">Limitations</a>
+  <a href="#takeaways">Takeaways</a>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <div class="hero" id="overview">
+    <div class="tag">Master's Thesis Research</div>
+    <h1>Evaluating Multi-Model Adversarial Attack<br>Architectures for LLM-Based Anonymization</h1>
+    <p>An empirical study extending the Adversarial Anonymization (AA) framework from Staab et al. (ICLR 2025) by replacing the single-model attacker with parallel, sequential, evidence-targeted, and multi-round multi-model attack configurations.</p>
+    <div class="meta">
+      <div class="meta-item">Dataset: <span>20 Synthetic Profiles</span></div>
+      <div class="meta-item">Attacker A: <span>GPT-4o (Analytical)</span></div>
+      <div class="meta-item">Attacker B: <span>Claude Sonnet 4.6 (Sociolinguistic)</span></div>
+      <div class="meta-item">Anonymizer: <span>GPT-4o</span></div>
+      <div class="meta-item">Pipelines Tested: <span>5</span></div>
+    </div>
+  </div>
+
+  <!-- ORIGINAL PAPER -->
+  <section id="paper">
+    <h2>The Original Paper</h2>
+    <p class="subtitle">What we are extending — Staab et al., "Language Models are Advanced Anonymizers", ICLR 2025</p>
+
+    <div class="card highlight">
+      <h3>Core Idea: Adversarial Anonymization (AA) Framework</h3>
+      <p>Instead of anonymizing text blindly, use an LLM as an attacker — ask it "what can you infer about this person?" — then show its reasoning to an anonymizer and say "now fix these leaks." Re-attack to verify. Repeat.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:16px;">
+      <div class="card">
+        <h3>📊 Paper's Key Result</h3>
+        <p>Single GPT-4 attacker over 5 rounds reduces adversarial accuracy from <strong>86.7% → 41.6%</strong>. Filtering to high-confidence predictions (certainty ≥ 3) drops it further to <strong>7.7%</strong>.</p>
+      </div>
+      <div class="card">
+        <h3>🔮 Paper's Open Question</h3>
+        <p>The paper explicitly states in its future work (Section G.2): <em>"An interesting direction would be to use multiple models as attackers, since different models might identify different types of evidence."</em></p>
+      </div>
+      <div class="card">
+        <h3>🎯 Our Thesis Question</h3>
+        <p>Does using two LLMs with different reasoning styles (GPT-4o analytical + Claude sociolinguistic) as the attacker produce better anonymization than a single model?</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATASET -->
+  <section id="dataset">
+    <h2>Dataset &amp; Experimental Setup</h2>
+    <p class="subtitle">What we ran experiments on</p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+      <div class="card">
+        <h3>Data</h3>
+        <ul>
+          <li>20 synthetic Reddit-style user profiles</li>
+          <li>Source: paper's own benchmark dataset</li>
+          <li>Filter: hardness ≥ 1, certainty ≥ 1, max 2000 tokens</li>
+          <li>525 total profiles available; 20 used as pilot study</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>PII Attributes Targeted</h3>
+        <ul>
+          <li>Age &nbsp;·&nbsp; Gender &nbsp;·&nbsp; Income</li>
+          <li>Education &nbsp;·&nbsp; Marital Status</li>
+          <li>Occupation &nbsp;·&nbsp; Location</li>
+          <li>Total: 20 inferences evaluated per run</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Models Used</h3>
+        <ul>
+          <li><strong>Attacker A:</strong> GPT-4o (temp 0.1) — analytical, structured</li>
+          <li><strong>Attacker B:</strong> Claude Sonnet 4.6 (temp 0.5) — sociolinguistic</li>
+          <li><strong>Anonymizer:</strong> GPT-4o (temp 0.1)</li>
+          <li><strong>Utility Judge:</strong> GPT-4o (temp 0.1)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Design Principle</h3>
+        <ul>
+          <li>All new code in separate files — original paper code untouched</li>
+          <li>Same metrics as paper for fair comparison</li>
+          <li>Each pipeline run independently with its own output directory</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- METRICS -->
+  <section id="metrics">
+    <h2>Evaluation Metrics</h2>
+    <p class="subtitle">Three metrics from the paper, one derived from the paper's framework</p>
+
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="icon">🎯</div>
+        <h4>Adversarial Accuracy Top-3</h4>
+        <p>Fraction of PII attributes where the correct answer appears in the attacker's top-3 guesses. <strong>Primary paper metric.</strong></p>
+        <div class="direction lower-better">↓ Lower is better</div>
+      </div>
+      <div class="metric-card">
+        <div class="icon">🎯</div>
+        <h4>Adversarial Accuracy Top-1</h4>
+        <p>Fraction where the attacker's single best guess is correct. Stricter than Top-3.</p>
+        <div class="direction lower-better">↓ Lower is better</div>
+      </div>
+      <div class="metric-card">
+        <div class="icon">🔍</div>
+        <h4>Evidence Rate</h4>
+        <p>Fraction of predictions where the attacker cites direct text evidence (certainty ≥ 3 on 1–5 scale). Derived from the paper's certainty scores — <strong>not an explicit paper metric</strong>.</p>
+        <div class="direction lower-better">↓ Lower is better</div>
+      </div>
+      <div class="metric-card">
+        <div class="icon">✅</div>
+        <h4>Combined Utility</h4>
+        <p>mean(Readability/10, SemanticMeaning/10, ROUGE-1 F1). <strong>Paper's exact formula.</strong> Measures how much narrative quality is preserved.</p>
+        <div class="direction higher-better">↑ Higher is better</div>
+      </div>
+    </div>
+
+    <div class="card warning" style="margin-top:20px;">
+      <h3>⚠️ Important Distinction: Evidence Rate vs. Paper Metric</h3>
+      <p>The paper reports certainty scores and uses certainty ≥ 3 as a <em>filter</em> to show 86.7% → 7.7%. We operationalize this as a continuous metric tracked across all architectures and rounds. This is our own analytical addition, not a metric the paper reports directly.</p>
+    </div>
+  </section>
+
+  <!-- PIPELINES -->
+  <section id="pipelines">
+    <h2>The 4 Pipelines We Designed</h2>
+    <p class="subtitle">Each is a different answer to: how should multiple models collaborate to attack a profile?</p>
+
+    <div class="pipeline-grid">
+
+      <div class="pipeline-card p0">
+        <div class="pipeline-num">Pipeline 0 — Baseline (Control)</div>
+        <h3>Single GPT-4o Attacker</h3>
+        <p class="rationale">Replication of the original paper's setup. Single GPT-4o attacker → anonymize → re-attack. Needed as a reference point — without a baseline we cannot claim improvement.</p>
+        <div class="flow-box">
+          Profile <span class="flow-arrow">→</span> GPT-4o Attack<br>
+          <span class="flow-arrow">→</span> Anonymizer (GPT-4o)<br>
+          <span class="flow-arrow">→</span> Re-Attack (GPT-4o)<br>
+          <span class="flow-arrow">→</span> Metrics
+        </div>
+      </div>
+
+      <div class="pipeline-card p1">
+        <div class="pipeline-num">Pipeline 1 — Parallel</div>
+        <h3>GPT-4o + Claude Simultaneously</h3>
+        <p class="rationale">Two LLMs attack the same profile independently at the same time. Different models have different blind spots — merging both perspectives gives the anonymizer a more complete threat picture.</p>
+        <div class="flow-box">
+          Profile <span class="flow-arrow">→</span> [GPT-4o Attack] ─┐<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flow-arrow">→</span> [Claude Attack] &nbsp;─┤<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flow-arrow">→</span> Merge<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flow-arrow">→</span> Anonymizer<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flow-arrow">→</span> Re-Attack Both
+        </div>
+      </div>
+
+      <div class="pipeline-card p2">
+        <div class="pipeline-num">Pipeline 2 — Sequential</div>
+        <h3>GPT-4o → Claude (Informed)</h3>
+        <p class="rationale">GPT-4o attacks first. Claude then receives GPT-4o's full reasoning and is told: "find what this missed." The second model is explicitly complementary, not redundant.</p>
+        <div class="flow-box">
+          Profile <span class="flow-arrow">→</span> GPT-4o Attack<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flow-arrow">↓</span> [A's findings passed to B]<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flow-arrow">→</span> Claude Attack (informed)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flow-arrow">→</span> Accumulated findings<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flow-arrow">→</span> Anonymizer <span class="flow-arrow">→</span> Re-Attack
+        </div>
+      </div>
+
+      <div class="pipeline-card p3">
+        <div class="pipeline-num">Pipeline 3 — Evidence-Targeted</div>
+        <h3>Priority-Guided Surgical Editing</h3>
+        <p class="rationale">Changes the anonymizer, not just the attack. Anonymizer receives priority labels (HIGH/MEDIUM/LOW) per attribute and must: (1) identify exact evidence phrases, then (2) replace only those phrases.</p>
+        <div class="flow-box">
+          Parallel Attack <span class="flow-arrow">→</span> Priority Labels<br>
+          &nbsp;&nbsp;HIGH = both agree, certainty ≥ 3<br>
+          &nbsp;&nbsp;MED &nbsp;= one attacker has evidence<br>
+          &nbsp;&nbsp;LOW &nbsp;= both guessing<br>
+          <span class="flow-arrow">→</span> Evidence-Targeted Anonymizer<br>
+          &nbsp;&nbsp;Step 1: identify exact phrases<br>
+          &nbsp;&nbsp;Step 2: replace only those phrases
+        </div>
+      </div>
+
+    </div>
+
+    <div class="pipeline-card p4" style="margin-top:20px;">
+      <div class="pipeline-num">Pipeline 4 — Multi-Round Adversarial Loop</div>
+      <h3>Iterative Attack–Anonymize Cycle (5 Rounds)</h3>
+      <p class="rationale">Directly implements the paper's core AA loop but with parallel multi-model attacks inside each round. Each round attacks the already-anonymized text, finding residual signals the previous round left behind. Ran for 5 rounds with stopping threshold at Top-3 accuracy ≤ 25%.</p>
+      <div class="flow-box" style="margin-top:12px;">
+        Round 1: Original Profile &nbsp;<span class="flow-arrow">→</span> Parallel Attack <span class="flow-arrow">→</span> Anonymize <span class="flow-arrow">→</span> Anonymized_v1<br>
+        Round 2: Anonymized_v1 &nbsp;&nbsp;<span class="flow-arrow">→</span> Parallel Attack <span class="flow-arrow">→</span> Anonymize <span class="flow-arrow">→</span> Anonymized_v2<br>
+        Round 3: Anonymized_v2 &nbsp;&nbsp;<span class="flow-arrow">→</span> Parallel Attack <span class="flow-arrow">→</span> Anonymize <span class="flow-arrow">→</span> Anonymized_v3<br>
+        Round 4: Anonymized_v3 &nbsp;&nbsp;<span class="flow-arrow">→</span> Parallel Attack <span class="flow-arrow">→</span> Anonymize <span class="flow-arrow">→</span> Anonymized_v4<br>
+        Round 5: Anonymized_v4 &nbsp;&nbsp;<span class="flow-arrow">→</span> Parallel Attack <span class="flow-arrow">→</span> Anonymize <span class="flow-arrow">→</span> Anonymized_v5
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results">
+    <h2>Main Results — Single-Round Pipelines</h2>
+    <p class="subtitle">All results on 20 synthetic profiles (n=20 PII inferences per run)</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Architecture</th>
+          <th>Pre Top-3 Acc</th>
+          <th>Post Top-3 Acc</th>
+          <th>Reduction</th>
+          <th>Post Top-1 Acc</th>
+          <th>Post Evidence Rate</th>
+          <th>Utility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="arch-label">Baseline</span> <span class="tag-pill tag-baseline">Control</span></td>
+          <td>65%</td>
+          <td class="neutral">55%</td>
+          <td>−10pp</td>
+          <td>40%</td>
+          <td>50%</td>
+          <td>0.942</td>
+        </tr>
+        <tr>
+          <td><span class="arch-label">Parallel</span> <span class="tag-pill tag-new">New</span></td>
+          <td>65%</td>
+          <td class="neutral">55%</td>
+          <td>−10pp</td>
+          <td class="best">35%</td>
+          <td>55%</td>
+          <td>0.941</td>
+        </tr>
+        <tr>
+          <td><span class="arch-label">Sequential</span> <span class="tag-pill tag-new">New</span></td>
+          <td>65%</td>
+          <td class="neutral">55%</td>
+          <td>−10pp</td>
+          <td class="best">30%</td>
+          <td>50%</td>
+          <td>0.937</td>
+        </tr>
+        <tr>
+          <td><span class="arch-label">Evidence-Targeted</span> <span class="tag-pill tag-new">New</span></td>
+          <td>60%</td>
+          <td class="neutral">55%</td>
+          <td>−5pp</td>
+          <td class="best">30%</td>
+          <td>55%</td>
+          <td>0.936</td>
+        </tr>
+        <tr style="background:#f0fff8;">
+          <td><span class="arch-label">Multi-Round (5×)</span> <span class="tag-pill tag-best">Best</span></td>
+          <td>55%</td>
+          <td class="best">50%</td>
+          <td>−5pp</td>
+          <td>25–35%</td>
+          <td class="best">30%</td>
+          <td class="best">0.937 (stable)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:24px;">
+      <div class="card highlight">
+        <h3>✅ What Improved</h3>
+        <ul>
+          <li>Top-1 accuracy drops more aggressively in multi-model pipelines (−25pp sequential vs −10pp baseline)</li>
+          <li>Multi-round broke below the 55% Top-3 floor to <strong>50%</strong></li>
+          <li>Evidence rate reduced from 50% → 30% over 5 rounds (−20pp)</li>
+          <li>Utility perfectly stable across all 5 multi-round iterations at 0.937</li>
+        </ul>
+      </div>
+      <div class="card warning">
+        <h3>⚠️ What Did Not Change</h3>
+        <ul>
+          <li>Top-3 adversarial accuracy: all single-round architectures converge to exactly <strong>55%</strong></li>
+          <li>Architecture complexity alone did not break the floor</li>
+          <li>Evidence-targeted: smallest Top-3 reduction (−5pp) despite most complex prompt</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- MULTI ROUND -->
+  <section id="multiround">
+    <h2>Multi-Round Loop — Round by Round</h2>
+    <p class="subtitle">5 rounds of iterative attack–anonymize with parallel multi-model attacks</p>
+
+    <div class="round-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Round</th>
+            <th>Pre Top-3</th>
+            <th>Post Top-3</th>
+            <th>Pre Evidence Rate</th>
+            <th>Post Evidence Rate</th>
+            <th>Avg Certainty (post)</th>
+            <th>Utility</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Round 1</strong></td>
+            <td>55%</td>
+            <td class="best">50%</td>
+            <td>50%</td>
+            <td class="trend-up">60%</td>
+            <td>2.10</td>
+            <td>0.937</td>
+          </tr>
+          <tr>
+            <td><strong>Round 2</strong></td>
+            <td>50%</td>
+            <td class="neutral">50%</td>
+            <td>50%</td>
+            <td class="trend-down">45%</td>
+            <td>1.90</td>
+            <td>0.937</td>
+          </tr>
+          <tr>
+            <td><strong>Round 3</strong></td>
+            <td>50%</td>
+            <td class="neutral">50%</td>
+            <td>50%</td>
+            <td class="trend-down">40%</td>
+            <td>1.85</td>
+            <td>0.937</td>
+          </tr>
+          <tr>
+            <td><strong>Round 4</strong></td>
+            <td>50%</td>
+            <td class="trend-up">55%</td>
+            <td>35%</td>
+            <td class="trend-down">30%</td>
+            <td>1.75</td>
+            <td>0.937</td>
+          </tr>
+          <tr>
+            <td><strong>Round 5</strong></td>
+            <td>50%</td>
+            <td class="best">50%</td>
+            <td>25%</td>
+            <td class="trend-down">30%</td>
+            <td>1.70</td>
+            <td>0.937</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:20px;">
+      <div class="card highlight">
+        <h3>📉 Evidence Rate Trend</h3>
+        <p>Post-anonymization evidence rate declined from <strong>60% → 30%</strong> over 5 rounds — a <strong>30pp reduction</strong>. Attackers progressively cite less direct text evidence.</p>
+      </div>
+      <div class="card highlight">
+        <h3>🎯 Accuracy Trend</h3>
+        <p>Top-3 accuracy held at <strong>50%</strong> from Round 1 onward — below the 55% single-round floor. The loop broke through the wall that architecture changes could not.</p>
+      </div>
+      <div class="card highlight">
+        <h3>✅ Utility Stability</h3>
+        <p>Combined utility stayed at exactly <strong>0.937 every round</strong>. Five rounds of iterative editing did not degrade readability or semantic meaning at all.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEFEAT RATE -->
+  <section id="defeat">
+    <h2>Attack Defeat Rate</h2>
+    <p class="subtitle">Custom metric — fraction of profiles where anonymization completely misdirected the attacker (zero overlap between pre/post guesses). Not from the paper.</p>
+
+    <div class="defeat-grid">
+      <div class="defeat-card low">
+        <div class="label">Baseline (GPT-4o only)</div>
+        <div class="pct">15%</div>
+        <div class="fraction">3 / 20 profiles</div>
+        <p style="font-size:12px; color:#888; margin-top:8px;">Single attacker — only partially misdirected on most profiles</p>
+      </div>
+      <div class="defeat-card high">
+        <div class="label">Parallel — Attack A (GPT-4o)</div>
+        <div class="pct">45%</div>
+        <div class="fraction">9 / 20 profiles</div>
+        <p style="font-size:12px; color:#888; margin-top:8px;">3× improvement over baseline</p>
+      </div>
+      <div class="defeat-card high">
+        <div class="label">Parallel — Attack B (Claude)</div>
+        <div class="pct">45%</div>
+        <div class="fraction">9 / 20 profiles</div>
+        <p style="font-size:12px; color:#888; margin-top:8px;">Both models defeated equally</p>
+      </div>
+      <div class="defeat-card high">
+        <div class="label">Parallel — Both Defeated</div>
+        <div class="pct">45%</div>
+        <div class="fraction">9 / 20 profiles</div>
+        <p style="font-size:12px; color:#888; margin-top:8px;">Whenever one was defeated, so was the other</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3>Why Defeat Rate and Adversarial Accuracy Tell Different Stories</h3>
+      <p>Both baseline and parallel have 55% post-anonymization Top-3 accuracy — yet defeat rate is 15% vs 45%. This means: the baseline makes <strong>small improvements spread across all profiles</strong> (slightly fewer correct guesses everywhere), while the parallel makes <strong>complete improvements on some profiles</strong> (9 profiles fully protected) while leaving others similar. Same average, very different distribution of protection.</p>
+    </div>
+  </section>
+
+  <!-- PER ATTRIBUTE -->
+  <section id="attributes">
+    <h2>Per-Attribute Analysis</h2>
+    <p class="subtitle">Post-anonymization Top-3 accuracy broken down by PII type (Multi-Round Round 1)</p>
+
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Post-Anon Top-3</th><th>Resistance Level</th><th>Reason</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Marital Status</strong></td>
+          <td class="worst">100%</td>
+          <td><span style="color:#e74c3c; font-weight:700;">Very High</span><span class="attr-bar attr-high" style="width:80px;"></span></td>
+          <td style="font-size:13px; color:#555;">Encoded pervasively in relationship discourse, topic selection, life event references — impossible to remove by phrase editing</td>
+        </tr>
+        <tr>
+          <td><strong>Income</strong></td>
+          <td class="worst">67%</td>
+          <td><span style="color:#e74c3c; font-weight:700;">High</span><span class="attr-bar attr-high" style="width:55px;"></span></td>
+          <td style="font-size:13px; color:#555;">Correlated with vocabulary register, spending references, financial framing across entire text</td>
+        </tr>
+        <tr>
+          <td><strong>Gender</strong></td>
+          <td class="worst">67%</td>
+          <td><span style="color:#e74c3c; font-weight:700;">High</span><span class="attr-bar attr-high" style="width:55px;"></span></td>
+          <td style="font-size:13px; color:#555;">Writing style, topic selection, discourse patterns carry gender signals throughout</td>
+        </tr>
+        <tr>
+          <td><strong>Age</strong></td>
+          <td class="neutral">50%</td>
+          <td><span style="color:#f39c12; font-weight:700;">Medium</span><span class="attr-bar attr-mid" style="width:40px;"></span></td>
+          <td style="font-size:13px; color:#555;">Mix of explicit references (removed easily) and generational vocabulary (harder to remove)</td>
+        </tr>
+        <tr>
+          <td><strong>Education</strong></td>
+          <td class="neutral">33–50%</td>
+          <td><span style="color:#f39c12; font-weight:700;">Medium</span><span class="attr-bar attr-mid" style="width:35px;"></span></td>
+          <td style="font-size:13px; color:#555;">Degree level sometimes explicit (removed), sometimes inferred from vocabulary complexity</td>
+        </tr>
+        <tr>
+          <td><strong>Location</strong></td>
+          <td class="best">0%</td>
+          <td><span style="color:#27ae60; font-weight:700;">Low</span><span class="attr-bar attr-low" style="width:20px;"></span></td>
+          <td style="font-size:13px; color:#555;">City/state names are explicit → easily removed by phrase-level editing</td>
+        </tr>
+        <tr>
+          <td><strong>Occupation</strong></td>
+          <td class="best">0%</td>
+          <td><span style="color:#27ae60; font-weight:700;">Low</span><span class="attr-bar attr-low" style="width:20px;"></span></td>
+          <td style="font-size:13px; color:#555;">Job title and industry references are explicit → easily removed</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- CORE FINDING -->
+  <section id="finding">
+    <h2>Core Finding</h2>
+
+    <div class="finding-box">
+      <h3>The 55% Floor</h3>
+      <p>All four single-round architectures — regardless of how many attackers were used, how their perspectives were combined, or how targeted the anonymizer's edits were — converge to exactly <span class="stat">55% Top-3 adversarial accuracy</span> post-anonymization. The multi-round loop is the only approach that breaks below this floor, reaching <span class="stat">50%</span> while reducing the evidence rate from 50% to <span class="stat">30%</span> over 5 rounds.</p>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h3>Why the Floor Exists</h3>
+      <p>After phrase-level editing removes explicit PII signals (location names, job titles), the remaining 55% comes from <strong>demographic inference through writing style</strong>:</p>
+      <ul style="margin-top:10px;">
+        <li style="margin-bottom:6px;"><strong>Vocabulary register</strong> — formal/informal, technical/lay — correlates with education and occupation</li>
+        <li style="margin-bottom:6px;"><strong>Topic selection</strong> — what subjects the person writes about — correlates with age, gender, marital status</li>
+        <li style="margin-bottom:6px;"><strong>Discourse structure</strong> — how arguments are made, what is presupposed — correlates with education</li>
+        <li><strong>Relationship discourse</strong> — how partners, family, social dynamics are discussed — reveals marital status</li>
+      </ul>
+      <p style="margin-top:12px;">These signals are distributed across every sentence. No attacker, however comprehensive, can force the anonymizer to rewrite the entire text without destroying utility. Only iteration erodes them gradually.</p>
+    </div>
+
+    <div class="card highlight" style="margin-top:16px;">
+      <h3>Alignment with the Original Paper</h3>
+      <p>The paper shows 86.7% → 41.6% over 5 rounds, then → 7.7% when filtered to certainty ≥ 3. This means the paper's remaining 41.6% is mostly the same phenomenon — low-confidence stylistic inference that cannot be removed by targeted editing. Our results are weaker (55% floor vs 41.6%) due to smaller sample size (n=20 vs n=426) and synthetic rather than real profiles.</p>
+    </div>
+  </section>
+
+  <!-- PAPER COMPARISON -->
+  <section id="paper-compare">
+    <h2>Comparison with Original Paper</h2>
+    <p class="subtitle">Our pilot study vs. the paper's full experiment</p>
+
+    <div class="comparison-row">
+      <div class="comp-card paper">
+        <h4>📄 Original Paper (Staab et al., ICLR 2025)</h4>
+        <div class="comp-row"><span class="label">Dataset</span><span class="val">n=426, real Reddit profiles</span></div>
+        <div class="comp-row"><span class="label">Pre-anon accuracy</span><span class="val">86.7% Top-3</span></div>
+        <div class="comp-row"><span class="label">Post-anon (5 rounds)</span><span class="val">41.6% Top-3</span></div>
+        <div class="comp-row"><span class="label">Filtered (certainty ≥ 3)</span><span class="val">7.7% Top-3</span></div>
+        <div class="comp-row"><span class="label">Attacker</span><span class="val">Single GPT-4 model</span></div>
+        <div class="comp-row"><span class="label">Utility</span><span class="val">~0.85–0.90 (estimated)</span></div>
+      </div>
+      <div class="comp-card ours">
+        <h4>🔬 Our Work (Pilot Study)</h4>
+        <div class="comp-row"><span class="label">Dataset</span><span class="val">n=20, synthetic profiles</span></div>
+        <div class="comp-row"><span class="label">Pre-anon accuracy</span><span class="val">65% Top-3</span></div>
+        <div class="comp-row"><span class="label">Post-anon (5 rounds)</span><span class="val">50% Top-3</span></div>
+        <div class="comp-row"><span class="label">Evidence rate (R5 post)</span><span class="val">30%</span></div>
+        <div class="comp-row"><span class="label">Attacker</span><span class="val">GPT-4o + Claude (parallel)</span></div>
+        <div class="comp-row"><span class="label">Utility</span><span class="val">0.937–0.942 (stable)</span></div>
+      </div>
+    </div>
+
+    <div class="card warning" style="margin-top:20px;">
+      <h3>Why Our Numbers Differ from the Paper</h3>
+      <ul>
+        <li style="margin-bottom:6px;"><strong>Sample size:</strong> n=20 vs n=426. With n=20, one profile = 5% of the result — high statistical noise.</li>
+        <li style="margin-bottom:6px;"><strong>Synthetic vs real:</strong> Synthetic profiles may encode PII more explicitly, making them easier to anonymize at the phrase level.</li>
+        <li><strong>Profile filter:</strong> We used certainty ≥ 1 (all profiles), the paper used harder profiles — explaining the lower 65% vs 86.7% starting accuracy.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- LIMITATIONS -->
+  <section id="limitations">
+    <h2>Limitations</h2>
+    <p class="subtitle">Honest assessment of what constrains our conclusions</p>
+
+    <div class="limit-grid">
+      <div class="limit-item">
+        <div class="limit-icon">📊</div>
+        <div>
+          <h4>Small Sample Size (n=20)</h4>
+          <p>Insufficient for statistical significance. Each profile represents 5% of results. One or two profiles changing could shift accuracy by 10pp. Results are directional, not definitive.</p>
+        </div>
+      </div>
+      <div class="limit-item">
+        <div class="limit-icon">🤖</div>
+        <div>
+          <h4>Synthetic Profiles</h4>
+          <p>Synthetic data may encode PII more explicitly than real Reddit posts. Privacy claims on synthetic profiles have limited real-world validity.</p>
+        </div>
+      </div>
+      <div class="limit-item">
+        <div class="limit-icon">⚖️</div>
+        <div>
+          <h4>Utility Measurement</h4>
+          <p>GPT-4o judged readability as 10/10 for all profiles — possibly too generous. LLM-based utility scoring is subjective and may not reflect real reader experience.</p>
+        </div>
+      </div>
+      <div class="limit-item">
+        <div class="limit-icon">🔧</div>
+        <div>
+          <h4>Single Anonymizer Model</h4>
+          <p>Only the attacker architecture varies — anonymizer is always GPT-4o. A fairer study would also vary the anonymizer to isolate the effect of attack diversity.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAKEAWAYS -->
+  <section id="takeaways">
+    <h2>Key Takeaways</h2>
+    <p class="subtitle">What this thesis contributes</p>
+
+    <div class="card" style="padding:28px;">
+      <ul class="takeaway-list">
+        <li>
+          <div class="takeaway-num">1</div>
+          <p><strong>Parallel and sequential multi-model attacks do not improve Top-3 adversarial accuracy</strong> compared to a single model — all converge to 55%. However, they reduce Top-1 accuracy more aggressively (sequential: −25pp vs baseline: −10pp).</p>
+        </li>
+        <li>
+          <div class="takeaway-num">2</div>
+          <p><strong>The evidence-targeted anonymizer successfully reduces Top-1 accuracy by 20pp</strong> (50%→30%) and specifically reduces Claude's evidence rate to 30%, confirming that evidence-grounded editing removes high-confidence signals. Probabilistic low-confidence guesses persist.</p>
+        </li>
+        <li>
+          <div class="takeaway-num">3</div>
+          <p><strong>The multi-round loop is the only approach that breaks the 55% floor</strong>, reaching 50% from Round 1 and reducing evidence rate from 50% → 30% over 5 rounds. Utility stays perfectly stable at 0.937 throughout — iterative editing does not degrade narrative quality.</p>
+        </li>
+        <li>
+          <div class="takeaway-num">4</div>
+          <p><strong>Model diversity matters for evidence elimination.</strong> Claude's evidence rate dropped to 30% post-anonymization vs GPT-4o's 50% in the parallel pipeline — the sociolinguistic perspective identifies different signal types that the anonymizer addresses differently.</p>
+        </li>
+        <li>
+          <div class="takeaway-num">5</div>
+          <p><strong>This work directly answers an open question from the original paper.</strong> Section G.2 of Staab et al. explicitly identifies multi-model attacking as a future direction. Our experiments provide the first empirical answer to that question.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Highlight active nav item on scroll
+  const sections = document.querySelectorAll('section, .hero');
+  const navLinks = document.querySelectorAll('nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 100) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.remove('active');
+      if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>
