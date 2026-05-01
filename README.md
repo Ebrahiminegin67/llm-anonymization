@@ -89,6 +89,58 @@ python generate_baseline_vs_parallel_report.py
 
 ---
 
+### Phase 4: New Architecture Variants
+- Added an enhanced baseline where one GPT-4o attacker uses a combined explicit + implicit prompt
+- Added a sequential architecture where Attack B is informed by Attack A before anonymization
+- Added GPT-4o-only explicit/implicit ablations for parallel and sequential setups
+- Goal: isolate whether architecture design changes privacy outcomes beyond the original baseline
+
+Key scripts:
+- `run_enhanced_baseline.py`
+- `run_sequential_inference.py`
+- `run_parallel_gpt4o_explicit_implicit.py`
+- `run_sequential_gpt4o_explicit_implicit.py`
+
+### Phase 5: Evidence-Targeted and Multi-Round Defense
+- Added evidence-targeted anonymization that edits attacker-used evidence spans more directly
+- Added multi-round attack → anonymize loops to measure iterative privacy gains
+- Tracked privacy and utility over rounds to test whether repeated loops break single-round performance floors
+
+Key scripts:
+- `run_evidence_targeted_pipeline.py`
+- `run_multi_round_pipeline.py`
+
+Key reports:
+- `anonymized_results/evidence_targeted_comparison.html`
+- `anonymized_results/paper_metrics_comparison.html`
+
+### Phase 6: Unified Evaluation and Reporting
+- Added paper-aligned metric utilities and cross-architecture comparison scripts
+- Generated side-by-side HTML reports for baseline, parallel, sequential, evidence-targeted, and multi-round results
+- Consolidated outputs into reproducible comparison reports for thesis writing and presentation
+
+Key scripts:
+- `evaluate_parallel_paper_metrics.py`
+- `compare_baseline_vs_parallel_paper_metrics.py`
+- `compare_all_architectures_paper_metrics.py`
+- `compare_evidence_targeted_metrics.py`
+
+Key reports:
+- `anonymized_results/all_architectures_paper_metrics.html`
+- `anonymized_results/baseline_vs_parallel_vs_sequential_report.html`
+- `anonymized_results/paper_metrics_comparison.html`
+
+### Quick Start — New Phases
+```bash
+python run_enhanced_baseline.py --config_path configs/anonymization/enhanced_baseline.yaml
+python run_sequential_inference.py --config_path configs/anonymization/sequential_inference.yaml
+python run_evidence_targeted_pipeline.py --config_path configs/anonymization/evidence_targeted.yaml
+python run_multi_round_pipeline.py --config_path configs/anonymization/multi_round.yaml --max_rounds 5
+python compare_all_architectures_paper_metrics.py
+```
+
+---
+
 
 
 # Overview
