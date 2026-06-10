@@ -17,7 +17,14 @@ get_example.py
 print_metrics.py
 compare_implicit_aware.py
 anonymized_results/*_100profiles/
+anonymized_results/*_aggressive_rewrite_*/
+anonymized_results/*_implicit_aware_*/
+anonymized_results/*_mini_*/
 anonymized_results/all_pipelines_comparison.html
+configs/anonymization/*_100profiles.yaml
+configs/anonymization/*_aggressive_rewrite_*.yaml
+configs/anonymization/*_implicit_aware_*.yaml
+configs/anonymization/*_mini_*.yaml
 *~
 __pycache__/
 .vscode/
