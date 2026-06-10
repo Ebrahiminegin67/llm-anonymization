@@ -1,241 +1,140 @@
-# My Project Notes
+# LLM-Based Adversarial Text Anonymization
+### Decomposing Adversarial Attacks via Explicit and Implicit Signal Reasoning
 
-This is my exploration of the LLM Anonymization project (ICLR 2025) for my thesis. The original project uses LLMs to anonymize Reddit comments while preserving text utility. I adapted the pipeline to work on the **TAB (Text Anonymization Benchmark)** dataset — a corpus of 1,268 ECHR court cases with gold-standard entity annotations.
-
-## What I Have Done
-
-### Phase 1: Understanding the Original Project
-- Set up the environment and ran the existing code
-- Explored the anonymization pipeline and prompt engineering strategies
-- Generated the anonymization report (see [anonymization_report.html](https://ebrahiminegin67.github.io/llm-anonymization/anonymization_report.html))
-
-### Phase 2: TAB Dataset Adaptation
-- Built a self-contained pipeline (`run_tab.py`) that adapts LLM anonymization to the TAB dataset
-- Implemented a TAB data loader with auto-download from GitHub
-- Designed 3 prompt levels (naive, intermediate, chain-of-thought) for legal document anonymization
-- Added document chunking for long court cases (avg ~5,000 chars)
-- Created entity-level evaluation metrics (recall, precision, per-type breakdown)
-- Achieved **95% entity recall** on 10 test documents with GPT-4o
-- Built a comparison script (`compare_levels_tab.py`) to visualize prompt level differences (see [prompt_level_comparison_TAB.html](https://ebrahiminegin67.github.io/llm-anonymization/prompt_level_comparison_TAB.html))
-- Full report: (see [tab_report.html](https://ebrahiminegin67.github.io/llm-anonymization/tab_report.html))
-
-### Quick Start — TAB Anonymization
-
-```bash
-# View dataset statistics (no API key needed)
-python run_tab.py --stats_only --split test
-
-# Anonymize 5 documents with GPT-4o
-python run_tab.py --model gpt-4o --split test --max_docs 5
-
-# Compare prompt levels
-python run_tab.py --model gpt-4o --max_docs 10 --prompt_level 1 --output_dir anonymized_results/tab_level1
-python run_tab.py --model gpt-4o --max_docs 10 --prompt_level 3 --output_dir anonymized_results/tab_level3
-
-# Generate comparison report
-python compare_levels_tab.py
-```
-
-### TAB Files Added
-| File | Purpose |
-|------|---------|
-| `run_tab.py` | Self-contained TAB anonymization runner |
-| `src/tab/tab_loader.py` | TAB dataset parser & downloader |
-| `src/tab/tab_anonymize.py` | Anonymization pipeline (modular version) |
-| `src/tab/tab_evaluation.py` | Evaluation metrics |
-| `configs/anonymization/tab.yaml` | Default TAB config |
-| `compare_levels_tab.py` | Prompt level comparison report generator |
-| `tab_report.html` | Detailed report explaining the adaptation |
+**Master's Thesis** — Negin Ebrahimi  
+Stockholm University, Department of Computer and Systems Sciences  
+Supervised by Zara Karazian and Amir Payberah
 
 ---
 
-### Phase 3: Parallel Inference Attacks
-- Designed a new pipeline architecture that runs **two inference attacks in parallel** using different model architectures
-- Attack A (GPT-4o) uses an analytical prompt; Attack B (Claude Sonnet 4) uses a sociolinguistic prompt
-- Inferences are **merged** before anonymization, giving the anonymizer a more complete view of privacy-leaking signals
-- After anonymization, both attacks are re-run to measure how well each was defeated
-- Compared against the standard single-attack baseline on 20 profiles
-- **Key result: 50% of attacks fully defeated** (parallel) vs **20%** (baseline) — a **2.5x improvement**
-- The diversity of attack perspectives (different models + different prompts) helps the anonymizer identify and protect against more attack vectors
-- Built an HTML comparison report: (see [baseline_vs_parallel_report.html](https://ebrahiminegin67.github.io/llm-anonymization/anonymized_results/baseline_vs_parallel_report.html))
-- Per-profile parallel inference results (pipeline diagram, attack guesses, certainty scores, agreement stats, and whether each attack was defeated — for 20 profiles using GPT-4o analytical vs Claude sociolinguistic): (see [parallel_inference_report.html](https://ebrahiminegin67.github.io/llm-anonymization/anonymized_results/parallel_gpt4o_vs_claude_20profiles/parallel_inference_report.html))
+## Overview
 
-#### Key Findings
-1. **Parallel defeats attacks far more often (50% vs 20%)** — merged inference gives the anonymizer significantly better information about what to protect
-2. **Certainty drop paradox** — baseline drops certainty more per PII type (0.85 vs 0.65), but this is because it starts with higher certainty (3.85 vs 2.7) due to consistent single-model signal. The parallel pipeline's merged inference is noisier but more comprehensive
-3. **Defeat rate > certainty drop** — "defeated" means the attacker's guesses completely changed, which is a stronger measure than subjective certainty reduction
-4. **Architecture diversity matters** — combining analytical (GPT-4o) and sociolinguistic (Claude) attack styles captures different privacy-leaking patterns
+This repository contains the code and results for a master's thesis that extends the Adversarial Anonymization (AA) framework proposed by Staab et al. (ICLR 2025). The thesis investigates whether decomposing the adversarial attacker into specialized components — one targeting explicit identifying signals and one targeting implicit stylistic signals — improves post-anonymization privacy protection.
 
-### Quick Start — Parallel Inference
-
-```bash
-# Run the parallel pipeline (GPT-4o + Claude) on 20 profiles
-python run_parallel_inference.py --config_path configs/anonymization/parallel_inference.yaml
-
-# Run the baseline single-attack pipeline for comparison
-python main.py --config_path configs/anonymization/baseline_single_attack.yaml
-
-# Generate the HTML comparison report
-python generate_baseline_vs_parallel_report.py
-```
-
-### Parallel Inference Files Added
-| File | Purpose |
-|------|---------|
-| `run_parallel_inference.py` | Parallel inference attack pipeline (dual-model) |
-| `generate_baseline_vs_parallel_report.py` | Baseline vs parallel HTML comparison report |
-| `configs/anonymization/parallel_inference.yaml` | Config for parallel pipeline (GPT-4o + Claude) |
-| `configs/anonymization/baseline_single_attack.yaml` | Config for single-attack baseline comparison |
+Four pipeline architectures are evaluated on 100 synthetic profiles from the SynthPAI dataset using GPT-4o for all roles (attacker, anonymizer, utility judge).
 
 ---
 
-### Phase 4: New Architecture Variants
-- Added an enhanced baseline where one GPT-4o attacker uses a combined explicit + implicit prompt
-- Added a sequential architecture where Attack B is informed by Attack A before anonymization
-- Added GPT-4o-only explicit/implicit ablations for parallel and sequential setups
-- Goal: isolate whether architecture design changes privacy outcomes beyond the original baseline
+## The Four Pipelines
 
-Key scripts:
-- `run_enhanced_baseline.py`
-- `run_sequential_inference.py`
-- `run_parallel_gpt4o_explicit_implicit.py`
-- `run_sequential_gpt4o_explicit_implicit.py`
+| Pipeline | Description |
+|----------|-------------|
+| **P1 — Explicit-Only Baseline** | Single attacker using the original Staab et al. prompt targeting explicit signals only |
+| **P2 — Combined Single-Prompt** | Single attacker using an enriched prompt targeting both explicit and implicit signals |
+| **P3 — Parallel Dual-Attacker** | Two independent attackers running simultaneously — Attack A (explicit) and Attack B (implicit) — results merged before anonymization |
+| **P4 — Sequential Dual-Attacker** | Attack A (explicit) runs first; Attack B (implicit) receives Attack A's findings and targets what was missed |
 
-### Phase 5: Evidence-Targeted and Multi-Round Defense
-- Added evidence-targeted anonymization that edits attacker-used evidence spans more directly
-- Added multi-round attack → anonymize loops to measure iterative privacy gains
-- Tracked privacy and utility over rounds to test whether repeated loops break single-round performance floors
-
-Key scripts:
-- `run_evidence_targeted_pipeline.py`
-- `run_multi_round_pipeline.py`
-
-Key reports:
-- `anonymized_results/evidence_targeted_comparison.html`
-- `anonymized_results/paper_metrics_comparison.html`
-
-### Phase 6: Unified Evaluation and Reporting
-- Added paper-aligned metric utilities and cross-architecture comparison scripts
-- Generated side-by-side HTML reports for baseline, parallel, sequential, evidence-targeted, and multi-round results
-- Consolidated outputs into reproducible comparison reports for thesis writing and presentation
-
-Key scripts:
-- `evaluate_parallel_paper_metrics.py`
-- `compare_baseline_vs_parallel_paper_metrics.py`
-- `compare_all_architectures_paper_metrics.py`
-- `compare_evidence_targeted_metrics.py`
-
-Key reports:
-- `anonymized_results/all_architectures_paper_metrics.html`
-- `anonymized_results/baseline_vs_parallel_vs_sequential_report.html`
-- `anonymized_results/paper_metrics_comparison.html`
-
-### Quick Start — New Phases
-```bash
-python run_enhanced_baseline.py --config_path configs/anonymization/enhanced_baseline.yaml
-python run_sequential_inference.py --config_path configs/anonymization/sequential_inference.yaml
-python run_evidence_targeted_pipeline.py --config_path configs/anonymization/evidence_targeted.yaml
-python run_multi_round_pipeline.py --config_path configs/anonymization/multi_round.yaml --max_rounds 5
-python compare_all_architectures_paper_metrics.py
-```
+Each pipeline runs for 2 adversarial anonymization rounds on the same 100 SynthPAI profiles.
 
 ---
 
+## Key Findings
 
+- All four pipelines converge to post-anonymization Top-3 adversarial accuracy of **0.24–0.27**
+- No architecture significantly outperforms the baseline (McNemar's test, all p > 0.05)
+- **Explicit signals are suppressed** by phrase-level rewriting (P3 Attack A: 0.42 → 0.33 evidence rate)
+- **Implicit signals persist unchanged** (P3 Attack B: 0.46 → 0.46 evidence rate — zero reduction)
+- The bottleneck is the anonymizer, not the attacker
 
-# Overview
-
-This is the repository accompanying our ICLR 2025 paper ["Large Language Models are Advanced Anonymizers"](https://arxiv.org/abs/2402.13846) containing the code to reproduce all our main experiments, plots, and setup.
+---
 
 ## Setup
 
-Install mamba via:
-
-```
-curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
-bash Mambaforge-$(uname)-$(uname -m).sh
-```
-
-This can be used to install our environment via `mamba env create -f environment.yaml`
-
-Afterward, you should edit the file `credentials_clean.py` to contain your OpenAI and Azure keys, respectively. Then rename it to `credentials.py` so that it will be loaded ( and is contained in the `.gitignore`).
-
-Additionally, in case you want to use licensed models from Huggingface log into your account via the Huggingface-CLI using`huggingface-cli login`
-
-## Important notes before running
-
-Please note that neither the PersonalReddit dataset nor the Span-Detection model by Dou et al. are open-access. Therefore, both have been removed from this repository. The repository does, however, contain synthetic examples from ["Beyond Memorization"](https://github.com/eth-sri/llmprivacy). Corresponding configuration files can be found under `configs/anonymization/synthetic`.
-
-You can also use this synthetic dataset to evaluate personal attribute inferences capabilities: [A Synthetic Dataset for Personal Attribute Inference](https://github.com/eth-sri/SynthPAI). It consists a large-scale fully-synthetic dataset as well as a data generation pipelline. In our corresponding [paper](https://arxiv.org/abs/2406.07217) we show that the dataset is a good proxy for real-world data, allowing all the same conclusions across all experiments, and can be used to evaluate personal attribute inference in a privacy-preserving manner. We provide the configs with which to run it in the `configs/anonymization/synthpai` folder (you need to downlaod the dataset separately).
-
-## Running
-
-We provide a wide range of configurations to run our experiments. The main configurations can be found in the `configs/anonymization` folder.
-
-Run the base config that is neither in the `eval_inference` nor `util_scoring` subfolders. For example `configs/anonymization/synthetic/reddit_gpt4.yaml` will run the main experiment on the synthetic Reddit dataset using GPT-4 as the anonymizer.
-
-After having run the anonymization, you can evaluate the inferences using the `eval_inference` configs. We generally use GPT-4 as the judge for these inferences. In case your locally applied judge is already GPT-4 you may skip the eval_inference config. Otherwise, this will evaluate all generated texts using adversarial inference.
-
-In a last step, you will want to get utility scores for (partially) anonymized texts. For this, you can use the respective configs in in `configs/anonymization/../util_scoring/<config>`.
-
-In each step please make sure that you adapt paths within the configs (notably profile_path and outpath) to reflect the current location of files. (Side note: You will find that as a cost-saving measure, we shared the inferences on fully non-anonymized text).
-
-Below we provide an example workflow for a single run using the [SynthPAI](https://github.com/eth-sri/SynthPAI) dataset:
+**1. Install the environment:**
 
 ```bash
-# SynthPAI Inference
-python main.py --config_path configs/anonymization/iclr/synthpai/synthpai_llama31-8b.yaml
-
-# Optional - Use this merge script if you dropped e.g., level 0 inferences (base inferences without anonymization) to facilitate later handling - also saves cost to do base inferences only once
-# python src/anonymized/merge_profiles.py --in_paths anonymized_results/iclr_synthpai/llama31-8b/inference_3.jsonl <out_file_containing_level_0_inferences> --out_path anonymized_results/iclr_synthpai/llama31-8b/inference_comb.jsonl
-
-# Run Judge inferences on the anonymized texts (adapte the path to the combined inferences if you have not used the merge script)
-python main.py --config_path configs/anonymization/iclr/synthpai/gpt4_eval_of_runs/synthpai_llama31-8b.yaml
-
-# Score the results - model will run the fastest, model_human is what we recommend for additional supervision 
-python src/anonymized/evaluate_anonymization.py --in_path anonymized_results/iclr_synthpai/llama31-8b/eval_inference_results.jsonl --decider "model" --out_path anonymized_results/iclr_synthpai/llama31-8b --score
-
-# Format the results for plotting into a csv
-python src/anonymized/evaluate_anonymization.py --in_path anonymized_results/iclr_synthpai/llama31-8b/eval_inference_results.jsonl --decider "model" --out_path anonymized_results/iclr_synthpai/llama31-8b 
-
-# From here you can plot the results using the plotting scripts
+curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+bash Mambaforge-$(uname)-$(uname -m).sh
+mamba env create -f environment.yaml
 ```
 
-## Evaluation Explanation
+**2. Add your API key:**
 
-To actually evaluate the results of the adversarial inferences (either with an LLM or a human evaluator), you can make use of the `src/anonymized/evaluate_anonymization.py` script.
+Copy `credentials_clean.py` to `credentials.py` and add your OpenAI API key.
 
-In particular, you want to run it as follows:
+```bash
+cp credentials_clean.py credentials.py
+# Edit credentials.py and add your key
+```
 
-`python src/anonymized/evaluate_anonymization.py --in_path <your_eval_inference_with_utility>.jsonl --decider "model_human" --out_path <out_directory> --score`
+**3. Download the SynthPAI dataset:**
 
-to create a canonical `eval_out.jsonl`. Running the same command again without the `--score` will translate this into the csv format used in our plotting script.
+Download `inference_0.jsonl` from the [SynthPAI repository](https://github.com/eth-sri/SynthPAI) and place it under `data/base_inferences/synthetic/`.
 
-## Plotting
+---
 
-All our plots have been created with a single call to the `all_plots.sh` script. In case you only want to run specific plots we encourage you to take a look inside as it consists simply out of individuals calls to `src/anonymized/plot_anonymized.py`.
+## Running the Pipelines
+
+### P1 — Explicit-Only Baseline
+```bash
+python main.py --config_path configs/anonymization/baseline_single_attack.yaml
+```
+
+### P2 — Combined Single-Prompt
+```bash
+python run_enhanced_baseline.py --config_path configs/anonymization/enhanced_baseline.yaml
+```
+
+### P3 — Parallel Dual-Attacker
+```bash
+python run_parallel_gpt4o_explicit_implicit.py --config_path configs/anonymization/parallel_gpt4o_explicit_implicit.yaml
+```
+
+### P4 — Sequential Dual-Attacker
+```bash
+python run_sequential_gpt4o_explicit_implicit.py --config_path configs/anonymization/sequential_gpt4o_explicit_implicit.yaml
+```
+
+---
+
+## Evaluation
+
+Results are stored in `anonymized_results/`. Each pipeline folder contains:
+- `inference_0.jsonl` — pre-anonymization attack results
+- `inference_1.jsonl`, `inference_2.jsonl` — post-anonymization attack results per round
+- `anonymized_0.jsonl`, `anonymized_1.jsonl` — anonymized text outputs
+- `utility_0.jsonl`, `utility_1.jsonl` — utility scores per round
+- `paper_metrics_report.html` — full metrics report
+
+---
+
+## Repository Structure
+
+```
+├── main.py                                  # P1 baseline runner
+├── run_enhanced_baseline.py                 # P2 runner
+├── run_parallel_gpt4o_explicit_implicit.py  # P3 runner
+├── run_sequential_gpt4o_explicit_implicit.py# P4 runner
+├── src/
+│   ├── anonymized/anonymizers/              # Anonymizer implementations
+│   └── reddit/                              # Profile loading and types
+├── configs/anonymization/                   # Pipeline configuration files
+├── anonymized_results/                      # Output results per pipeline
+└── data/base_inferences/synthetic/          # SynthPAI dataset (not included)
+```
+
+---
 
 ## Citation
 
-If you use this code, please consider citing the original work and the TAB dataset:
+If you use this code, please cite the original AA framework:
 
 ```bibtex
-@inproceedings{
-    staab25lmanon,
+@inproceedings{staab25lmanon,
     title={Language Models are Advanced Anonymizers},
     author={Robin Staab and Mark Vero and Mislav Balunović and Martin Vechev},
     booktitle={The Thirteenth International Conference on Learning Representations},
     year={2025},
 }
+```
 
-@article{pilan2022text,
-    title={The Text Anonymization Benchmark (TAB): A Dedicated Corpus and Evaluation Framework for Text Anonymization},
-    author={Pilán, Ildikó and Lison, Pierre and Øvrelid, Lilja and Papadopoulou, Anthi and Sánchez, David and Batet, Montserrat},
-    journal={Computational Linguistics},
-    volume={48},
-    number={4},
-    pages={1053--1101},
-    year={2022},
-    publisher={MIT Press}
+And the SynthPAI dataset:
+
+```bibtex
+@article{munzel2024synthpai,
+    title={SynthPAI: A Synthetic Dataset for Personal Attribute Inference},
+    author={Munzel, Nicolas and Staab, Robin and Vechev, Martin},
+    year={2024},
+    journal={arXiv preprint arXiv:2406.07217}
 }
 ```
