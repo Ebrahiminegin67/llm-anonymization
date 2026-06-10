@@ -14,9 +14,12 @@ Comparison:
   Baseline (Pipeline 1)         : GPT-4o, explicit-only prompt (paper's default)
   Enhanced Baseline (Pipeline 2): GPT-4o, combined explicit+implicit prompt  ← THIS SCRIPT
   Parallel GPT-4o×2 (Pipeline 3): two GPT-4o attacks in parallel, explicit vs implicit
+  Sequential GPT-4o (Pipeline 4): two GPT-4o attacks in sequence, explicit then implicit
 
 Pipeline:
-    Profiles → Combined Attack (explicit + implicit) → Anonymize → Utility → Re-attack
+    Profiles → Combined Attack (explicit + implicit)
+            → [Round 1] Anonymize → Utility → Re-attack
+            → [Round 2] Anonymize → Utility → Re-attack
 
 Usage:
     python run_enhanced_baseline.py \\

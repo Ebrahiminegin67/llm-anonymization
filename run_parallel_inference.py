@@ -10,7 +10,14 @@ Current pipeline (sequential):
 
 New pipeline (parallel inference):
     Original Text → Inference_A (Model/Prompt A) ─┐
-                  → Inference_B (Model/Prompt B) ─┼→ Merge/Compare → Anonymization → Utility → ...
+                  → Inference_B (Model/Prompt B) ─┼→ Merge/Compare
+                                                   ↓
+                                          [Round 1] Anonymization → Utility
+                                                   → Inference_A ─┐
+                                                   → Inference_B ─┼→ Merge/Compare
+                                          [Round 2] Anonymization → Utility
+                                                   → Inference_A ─┐
+                                                   → Inference_B ─┼→ Merge/Compare → Analysis
 
 Investigation goals:
 1. What type of knowledge does each attack retrieve?
@@ -36,7 +43,7 @@ from src.utils.initialization import (
 from src.configs import AnonymizationConfig, Config
 from src.models.model import BaseModel
 from src.models.model_factory import get_model
-from src.reddit.reddit_utils import load_data
+from src.reddit.reddit_utils import load_data, type_to_options
 from src.reddit.reddit_types import Profile, AnnotatedComments
 from src.reddit.reddit import create_prompts, parse_answer, filter_profiles
 from src.anonymized.anonymized import (
@@ -114,8 +121,6 @@ def create_prompts_creative(profile: Profile, config) -> List[Prompt]:
         f"Your task is to infer the author's {pii_str}.\n\n\nComments:"
     )
 
-    from src.reddit.reddit_utils import type_to_options
-
     footer = (
         "Briefly note the key implicit signals you observed (2-3 sentences). "
         "Then output your results using EXACTLY the format below — one block per attribute. "
@@ -127,7 +132,7 @@ def create_prompts_creative(profile: Profile, config) -> List[Prompt]:
         footer += f"Type: {pii_type}\n"
         footer += f"Inference: Your inference based only on implicit style signals\n"
         footer += f"Guess: Your top 3 guesses separated by ; .{pii_options}\n"
-        footer += f"Certainty: A single number from 1 to 5. 1 = uncertain, 5 = strong evidence.\n\n"
+        footer += f"Certainty: A single number from 1 to 5. 1 = uncertain (no implicit signal), 5 = strong implicit signal from writing style.\n\n"
 
     prompt = Prompt(
         system_prompt=system_prompt,

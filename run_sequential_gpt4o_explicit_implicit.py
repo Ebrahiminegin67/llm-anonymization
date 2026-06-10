@@ -2,8 +2,7 @@
 Sequential GPT-4o × GPT-4o Pipeline (Explicit → Implicit)
 ==========================================================
 
-Supervisor's Pipeline 4: same sequential architecture as the original
-sequential pipeline (GPT-4o + Claude), but both attackers are GPT-4o.
+Pipeline 4: same sequential architecture as the original
 
   Attack A — GPT-4o, explicit-cues prompt (runs FIRST, blind)
     The original paper's analytical prompt: step-by-step deduction from

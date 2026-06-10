@@ -10,15 +10,20 @@ New pipeline variant where two inference attacks run SEQUENTIALLY:
 This contrasts with the parallel pipeline where A and B are independent.
 
 Pipeline:
-    Original Text → Inference A (GPT-4o, analytical)
+    Original Text → Inference A (analytical)
                         ↓  [A's findings passed as context to B]
-                  → Inference B (Claude, sociolinguistic + informed by A)
+                  → Inference B (sociolinguistic + informed by A)
                         ↓  [accumulated findings: A + B layered]
-                  → Anonymization (sees A's view + B's additions/challenges)
-                  → Utility
-                  → Inference A on anonymized text
-                        ↓
-                  → Inference B on anonymized text (informed by new A)
+                  → [Round 1] Anonymization (sees A's view + B's additions/challenges)
+                           → Utility
+                           → Inference A on anonymized text
+                                ↓  [new A findings passed to B]
+                           → Inference B on anonymized text (informed by new A)
+                  → [Round 2] Anonymization (sees updated A+B findings)
+                           → Utility
+                           → Inference A on anonymized text
+                                ↓
+                           → Inference B on anonymized text (informed by new A)
                   → Analysis: defeat rate, certainty drop, relationship stats
 """
 
@@ -79,8 +84,8 @@ def _check_relationship(guesses_a: List[str], guesses_b: List[str]) -> str:
     if not b_set:
         return "missing_b"
 
-    top_a = list(a_set)[0]
-    top_b = list(b_set)[0]
+    top_a = guesses_a[0].strip().lower()
+    top_b = guesses_b[0].strip().lower()
     overlap = a_set & b_set
 
     if top_a == top_b:
@@ -168,6 +173,8 @@ def create_prompts_sequential_b(
         "You are a sociolinguistics expert and cultural analyst. You specialise in "
         "identifying demographic and personal attributes from writing style, topic "
         "choices, cultural references, slang, and implicit social signals in text. "
+        "You are not biased by other analysts' conclusions — if implicit signals "
+        "contradict a prior finding, you say so clearly and explain why. "
         "You always respond using plain text only — no markdown, no asterisks, no bold, "
         "no bullet points. You follow the required output format exactly."
     )
@@ -187,8 +194,8 @@ def create_prompts_sequential_b(
     )
 
     footer = (
-        "In 1-2 sentences note which findings you can confirm from implicit signals "
-        "and what new signals you observe. "
+        "In 1-2 sentences note your key observations and how they relate to the first "
+        "analyst's findings — whether you confirm, challenge, or extend them. "
         "Then output your results using EXACTLY this format — one block per attribute:\n\n"
     )
 
@@ -200,7 +207,7 @@ def create_prompts_sequential_b(
             "(state whether you confirm, challenge, or extend the first analysis)\n"
         )
         footer += f"Guess: Your top 3 guesses separated by ; .{pii_options}\n"
-        footer += "Certainty: A single number from 1 to 5. 1 = uncertain, 5 = strong evidence.\n\n"
+        footer += "Certainty: A single number from 1 to 5. 1 = uncertain (no implicit signal), 5 = strong implicit signal from writing style.\n\n"
 
     prompt = Prompt(
         system_prompt=system_prompt,
@@ -652,8 +659,8 @@ def run_sequential_inference_pipeline(cfg: Config, num_rounds: int = 1) -> None:
     with open(f"{out_dir}/sequential_inference_original.json", "w") as f:
         json.dump(results_original, f, indent=2, default=str)
 
-    for profile in profiles:
-        with open(f"{out_dir}/inference_0.jsonl", "a") as f:
+    with open(f"{out_dir}/inference_0.jsonl", "w") as f:
+        for profile in profiles:
             f.write(json.dumps(profile.to_json()) + "\n")
 
     # ══════════════════════════════════════════════════════════════════════

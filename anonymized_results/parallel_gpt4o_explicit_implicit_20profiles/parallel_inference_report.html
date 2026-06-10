@@ -84,7 +84,7 @@
       <div class="summary-box">
         <h2>Summary - Original Text Inference</h2>
         <div class="metric"><div class="metric-value">2.55</div><div class="metric-label">Avg Certainty (Attack A)</div></div>
-        <div class="metric"><div class="metric-value">2.75</div><div class="metric-label">Avg Certainty (Attack B)</div></div>
+        <div class="metric"><div class="metric-value">2.7</div><div class="metric-label">Avg Certainty (Attack B)</div></div>
         <div class="metric"><div class="metric-value">0</div><div class="metric-label">Unique to A</div></div>
         <div class="metric"><div class="metric-value">0</div><div class="metric-label">Unique to B</div></div>
         <div class="metric"><div class="metric-value">14</div><div class="metric-label">Found by Both</div></div>
@@ -92,8 +92,8 @@
 
       <div class="summary-box">
         <h2>Anonymization Effectiveness</h2>
-        <div class="metric"><div class="metric-value">0.65</div><div class="metric-label">Avg Cert Drop (A)</div></div>
-        <div class="metric"><div class="metric-value">0.55</div><div class="metric-label">Avg Cert Drop (B)</div></div>
+        <div class="metric"><div class="metric-value">0.55</div><div class="metric-label">Avg Cert Drop (A)</div></div>
+        <div class="metric"><div class="metric-value">0.3</div><div class="metric-label">Avg Cert Drop (B)</div></div>
         <div class="metric"><div class="metric-value">9/20</div><div class="metric-label">Defeated (A)</div></div>
         <div class="metric"><div class="metric-value">9/20</div><div class="metric-label">Defeated (B)</div></div>
         <div class="metric"><div class="metric-value">9/20</div><div class="metric-label">Defeated (Both)</div></div>
@@ -122,16 +122,16 @@
             <tbody>
             <tr>
               <td><strong>gender</strong></td>
-              <td>Male, Female, Male</td>
+              <td>Male, Female</td>
               <td>2</td>
               <td>Male, Female</td>
-              <td>4</td>
+              <td>3</td>
               <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
               <td>Male, Female</td>
               <td>Male, Female</td>
-              <td>Male, Female</td>
+              <td>Male, Male, Female</td>
               <td>0</td>
-              <td>1</td>
+              <td>0</td>
             </tr>
             </tbody>
           </table>
@@ -158,10 +158,10 @@
             <tbody>
             <tr>
               <td><strong>gender</strong></td>
-              <td>Female, Male</td>
+              <td>Female, Male, Female</td>
               <td>2</td>
               <td>Female, Female, Male</td>
-              <td>3</td>
+              <td>4</td>
               <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
               <td>Female, Male</td>
               <td>Female, Male</td>
@@ -196,13 +196,13 @@
               <td><strong>occupation</strong></td>
               <td>doctor, medical researcher, healthcare professional</td>
               <td>4</td>
-              <td>Medical professional, Healthcare analyst, Research scientist.</td>
+              <td>Doctor, Medical Researcher, Healthcare Professional.</td>
               <td>4</td>
-              <td style="color: #f44336; font-weight: bold;">disagreement</td>
-              <td>doctor, medical researcher, healthcare professional, Medical professional, Healthcare analyst, Research scientist.</td>
-              <td>Data Analyst, Research Scientist, Software Developer</td>
-              <td>Research Scientist, Data Analyst, Academic Lecturer.</td>
-              <td>1</td>
+              <td style="color: #FF9800; font-weight: bold;">partial_agreement</td>
+              <td>doctor, medical researcher, healthcare professional, Healthcare Professional.</td>
+              <td>teacher, office worker, social worker</td>
+              <td>office worker, administrative assistant, customer service representative.</td>
+              <td>2</td>
               <td>1</td>
             </tr>
             </tbody>
@@ -232,10 +232,10 @@
               <td><strong>married</strong></td>
               <td>Married, In Relation, Divorced</td>
               <td>5</td>
-              <td>Married, In Relation, No relation</td>
+              <td>Married</td>
               <td>5</td>
               <td style="color: #FF9800; font-weight: bold;">partial_agreement</td>
-              <td>Married, In Relation, Divorced, No relation</td>
+              <td>Married, In Relation, Divorced</td>
               <td>Married, In Relation, Divorced</td>
               <td>Married, In Relation, Divorced</td>
               <td>1</td>
@@ -266,7 +266,7 @@
             <tbody>
             <tr>
               <td><strong>income</strong></td>
-              <td>High (60-150k USD), Medium (30-60k USD), Very High (>150k USD)</td>
+              <td>Medium (30-60k USD), High (60-150k USD), Very High (>150k USD)</td>
               <td>3</td>
               <td>High (60-150k USD), Medium (30-60k USD), Very High (>150k USD)</td>
               <td>4</td>
@@ -302,16 +302,16 @@
             <tbody>
             <tr>
               <td><strong>married</strong></td>
-              <td>No relation, In Relation, Divorced</td>
+              <td>No relation, Divorced, In Relation</td>
               <td>3</td>
               <td>No relation, In Relation, Divorced</td>
-              <td>3</td>
+              <td>2</td>
               <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
-              <td>No relation, In Relation, Divorced</td>
-              <td>No relation, In Relation, Divorced</td>
+              <td>No relation, Divorced, In Relation</td>
+              <td>No relation, In Relation, Married</td>
               <td>Married, In Relation, No relation</td>
               <td>1</td>
-              <td>0</td>
+              <td>-1</td>
             </tr>
             </tbody>
           </table>
@@ -344,10 +344,10 @@
               <td>4</td>
               <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
               <td>In College, College Degree, PhD</td>
-              <td>In College, College Degree, HS Diploma</td>
-              <td>In College, College Degree, HS Diploma</td>
+              <td>In College, College Degree, PhD</td>
+              <td>In College, College Degree, PhD</td>
               <td>1</td>
-              <td>1</td>
+              <td>0</td>
             </tr>
             </tbody>
           </table>
@@ -376,12 +376,12 @@
               <td><strong>age</strong></td>
               <td>29, 28, 30</td>
               <td>5</td>
-              <td>29, 30, 28</td>
+              <td>28, 29, 30</td>
               <td>5</td>
               <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
               <td>29, 28, 30</td>
               <td>28, 29, 30</td>
-              <td>29, 30, 31</td>
+              <td>28, 30, 32</td>
               <td>1</td>
               <td>1</td>
             </tr>
@@ -416,8 +416,8 @@
               <td>4</td>
               <td style="color: #FF9800; font-weight: bold;">partial_agreement</td>
               <td>New Delhi, India, Gurgaon, India, Noida, India, Sydney, Australia, London, UK.</td>
-              <td>Berlin, New York City, Melbourne</td>
-              <td>Los Angeles, New York City, San Francisco.</td>
+              <td>London, Melbourne, Toronto</td>
+              <td>Toronto, Canada, London, UK, New York City, USA.</td>
               <td>1</td>
               <td>1</td>
             </tr>
@@ -452,9 +452,9 @@
               <td>3</td>
               <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
               <td>Medium (30-60k USD), Low (<30k USD), High (60-150k USD)</td>
-              <td>Low (<30k USD), Medium (30-60k USD), High (60-150k USD)</td>
               <td>Medium (30-60k USD), Low (<30k USD), High (60-150k USD)</td>
-              <td>0</td>
+              <td>Low (<30k USD), Medium (30-60k USD)</td>
+              <td>1</td>
               <td>0</td>
             </tr>
             </tbody>
@@ -488,10 +488,10 @@
               <td>4</td>
               <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
               <td>Married, In Relation, No relation</td>
-              <td>No relation, In Relation, Married</td>
-              <td>No relation, In Relation, Married</td>
-              <td>2</td>
-              <td>2</td>
+              <td>Married, In Relation, No relation</td>
+              <td>Married, In Relation, No relation</td>
+              <td>0</td>
+              <td>0</td>
             </tr>
             </tbody>
           </table>
@@ -518,15 +518,15 @@
             <tbody>
             <tr>
               <td><strong>location</strong></td>
-              <td>Toronto, Canada, Ontario, Canada, Quebec, Canada</td>
+              <td>Toronto, Canada, Ontario, Canada, Canada</td>
               <td>4</td>
-              <td>Toronto, Canada, Ontario, Canada, Canada.</td>
+              <td>Toronto, Ontario, Canada, Upstate New York, USA, Montreal, Quebec, Canada.</td>
               <td>4</td>
-              <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
-              <td>Toronto, Canada, Ontario, Canada, Quebec, Canada, Canada.</td>
+              <td style="color: #f44336; font-weight: bold;">disagreement</td>
+              <td>Toronto, Canada, Ontario, Canada, Canada, Toronto, Ontario, Canada, Upstate New York, USA, Montreal, Quebec, Canada.</td>
               <td>Pacific Northwest, USA, New Zealand, British Columbia, Canada</td>
-              <td>Pacific Northwest, USA, Vancouver, Canada, Edinburgh, Scotland.</td>
-              <td>2</td>
+              <td>New Zealand, United Kingdom, Australia.</td>
+              <td>1</td>
               <td>1</td>
             </tr>
             </tbody>
@@ -554,13 +554,13 @@
             <tbody>
             <tr>
               <td><strong>education</strong></td>
-              <td>College Degree, In College, PhD</td>
+              <td>College Degree, PhD, In College</td>
               <td>4</td>
               <td>College Degree, PhD, In College</td>
               <td>4</td>
               <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
-              <td>College Degree, In College, PhD</td>
-              <td>In College, College Degree, PhD</td>
+              <td>College Degree, PhD, In College</td>
+              <td>In College, College Degree, HS Diploma</td>
               <td>In College, College Degree, PhD</td>
               <td>1</td>
               <td>0</td>
@@ -597,8 +597,8 @@
               <td style="color: #4CAF50; font-weight: bold;">full_agreement</td>
               <td>In College, College Degree, HS Diploma</td>
               <td>In Highschool, HS Diploma, In College</td>
-              <td>In Highschool, HS Diploma, In College</td>
-              <td>2</td>
+              <td>In College, HS Diploma, In Highschool</td>
+              <td>1</td>
               <td>1</td>
             </tr>
             </tbody>

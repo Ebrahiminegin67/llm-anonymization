@@ -70,8 +70,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td><strong>Before Anonymization</strong></td><td>50.0%</td><td>65.0%</td><td>45.0%</td><td>65.0%</td><td>50.0%</td><td>65.0%</td></tr>
-        <tr><td><strong>After Anonymization</strong></td><td>40.0%</td><td>55.0%</td><td>25.0%</td><td>55.0%</td><td>40.0%</td><td>55.0%</td></tr>
+        <tr><td><strong>Before Anonymization</strong></td><td>35.0%</td><td>55.0%</td><td>35.0%</td><td>55.0%</td><td>35.0%</td><td>55.0%</td></tr>
+        <tr><td><strong>After Anonymization</strong></td><td>30.0%</td><td>50.0%</td><td>20.0%</td><td>45.0%</td><td>30.0%</td><td>50.0%</td></tr>
       </tbody>
     </table>
     
@@ -90,7 +90,7 @@
           <th>Attack A</th><th>Attack B</th><th>Accumulated (A + B)</th>
         </tr>
       </thead>
-      <tbody><tr><td><strong>age</strong></td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td></tr><tr><td><strong>education</strong></td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td></tr><tr><td><strong>gender</strong></td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td></tr><tr><td><strong>income</strong></td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td></tr><tr><td><strong>location</strong></td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr><tr><td><strong>married</strong></td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td></tr><tr><td><strong>occupation</strong></td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr></tbody>
+      <tbody><tr><td><strong>age</strong></td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>50.0%</td></tr><tr><td><strong>education</strong></td><td>50.0%</td><td>50.0%</td><td>50.0%</td><td>33.3%</td><td>33.3%</td><td>33.3%</td></tr><tr><td><strong>gender</strong></td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td></tr><tr><td><strong>income</strong></td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>66.7%</td><td>33.3%</td><td>66.7%</td></tr><tr><td><strong>location</strong></td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr><tr><td><strong>married</strong></td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td></tr><tr><td><strong>occupation</strong></td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr></tbody>
     </table>
     
 </div>
@@ -121,8 +121,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td><strong>Before Anonymization</strong></td><td>60.0%</td><td>2.65/5</td><td>70.0%</td><td>2.85/5</td><td>70.0%</td><td>2.85/5</td></tr>
-        <tr><td><strong>After Anonymization</strong></td><td>55.0%</td><td>2.15/5</td><td>60.0%</td><td>2.60/5</td><td>60.0%</td><td>2.60/5</td></tr>
+        <tr><td><strong>Before Anonymization</strong></td><td>50.0%</td><td>2.10/5</td><td>50.0%</td><td>2.35/5</td><td>50.0%</td><td>2.40/5</td></tr>
+        <tr><td><strong>After Anonymization</strong></td><td>40.0%</td><td>1.85/5</td><td>40.0%</td><td>1.85/5</td><td>45.0%</td><td>2.00/5</td></tr>
       </tbody>
     </table>
     
@@ -374,25 +374,25 @@
       <tbody>
         <tr>
           <td><strong>Attack A (GPT-4o Analytical)</strong></td>
-          <td>65.0%</td>
           <td>55.0%</td>
-          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+          <td>50.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 5.0pp</span></td>
           <td>0.938</td>
         </tr>
         
         <tr>
           <td><strong>Attack B (GPT-4o Sociolinguistic/Implicit, informed by A)</strong></td>
-          <td>65.0%</td>
           <td>55.0%</td>
+          <td>45.0%</td>
           <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
           <td>0.938</td>
         </tr>
         
         <tr>
           <td><strong>Accumulated (A + B) (A + B)</strong></td>
-          <td>65.0%</td>
           <td>55.0%</td>
-          <td><span style="color:#4CAF50;font-weight:bold;">▼ 10.0pp</span></td>
+          <td>50.0%</td>
+          <td><span style="color:#4CAF50;font-weight:bold;">▼ 5.0pp</span></td>
           <td>0.938</td>
         </tr>
         </tbody>
@@ -406,13 +406,13 @@
   <ul style="line-height:2;">
     <li>
       <strong>Adversarial accuracy (Attack A, post-anon, top-3):</strong>
-      55.0%
+      50.0%
       &nbsp;|&nbsp;
       <strong>Attack B:</strong>
-      55.0%
+      45.0%
       &nbsp;|&nbsp;
       <strong>Accumulated (A + B) view:</strong>
-      55.0%
+      50.0%
     </li>
     <li>
       <strong>Combined utility score:</strong>
@@ -423,12 +423,12 @@
     </li>
     <li>
       <strong>Evidence rate drop (Attack A):</strong>
-      60.0%
-      → 55.0%
+      50.0%
+      → 40.0%
       &nbsp;&nbsp;
       <strong>Attack B:</strong>
-      70.0%
-      → 60.0%
+      50.0%
+      → 40.0%
     </li>
   </ul>
 </div>

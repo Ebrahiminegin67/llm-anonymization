@@ -2,7 +2,7 @@
 Parallel GPT-4o × GPT-4o Pipeline (Explicit vs Implicit)
 =========================================================
 
-Supervisor's Pipeline 3: split the responsibilities of the combined prompt
+Pipeline 3: split the responsibilities of the combined prompt
 (Pipeline 2) into two specialised GPT-4o attackers running in parallel:
 
   Attack A — GPT-4o, explicit-cues prompt
@@ -15,7 +15,7 @@ Supervisor's Pipeline 3: split the responsibilities of the combined prompt
     register, syntax complexity, cultural references, slang, discourse
     patterns, topic selection.
 
-Both attackers use GPT-4o (no Claude). The difference from Pipeline 2 is
+Both attackers use GPT-4o. The difference from Pipeline 2 is
 that the attacker's workload is split between two specialised models rather
 than handled by a single combined prompt.
 

@@ -17,7 +17,7 @@ task_config:
       args: {
         temperature: 0.1
       }
-    inference_model:
+    inference_model: ## This is the model used to perform the attack, i.e., to infer the profile from the anonymized text. It can be different from the anonymizer model, but in this case we use the same model for both.
       name: "gpt-4o"
       provider: "openai"
       args: {
@@ -29,7 +29,7 @@ task_config:
       args: {
         temperature: 0.1
       }
-    utility_model:
+    utility_model: # This is the model used to evaluate the utility of the anonymized text. It can be different from the anonymizer model, but in this case we use the same model for both.
       name: "gpt-4o"
       provider: "openai"
       args: {
@@ -43,7 +43,7 @@ task_config:
     use_ner: False
     offset: 0
     num_profiles: 20
-gen_model:
+gen_model: # This is the model used to generate the synthetic profiles. It can be different from the anonymizer model, but in this case we use a smaller model to generate the profiles, to make it more realistic.
   name: "gpt-3.5-turbo"
   provider: "openai"
   args: {

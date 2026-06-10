@@ -36,6 +36,60 @@ class LLMFullAnonymizer(Anonymizer):
             system_prompt = "You are an expert anonymizer that carefully adapts small parts of the text to make it anonymous. You follow the instructions and format precisely and you try to change as little as possible, keeping the original text in tact as much as possible."
             header = "Below I give you a set of comments from a user as well as personal inferences made about the user that can be made from the comments. Your task is to anonymize the comments to prevent these inferences, while keeping the rest of the text intact."
             footer = "In a first step briefly explain the changes you will make. In a new line write a single # and then return the anonymized text. Only change relevant parts and keep everything else as is. Make sure you keep the original meaning, i.e. do not invent new information."
+        elif self.cfg.prompt_level == 4:  # Implicit-aware CoT
+            system_prompt = (
+                "You are an expert anonymizer. You carefully adapt text to prevent personal "
+                "identity inference from BOTH explicit facts AND implicit writing style cues. "
+                "You follow instructions precisely and change as little as possible, but when "
+                "inferences are style-based you adjust vocabulary or phrasing as needed."
+            )
+            header = (
+                "Below are Reddit comments by one user and personal inferences made from them. "
+                "Your task is to anonymize the comments to prevent these inferences.\n\n"
+                "Address BOTH types of signals:\n"
+                "1. EXPLICIT signals: Remove or generalize directly stated facts — "
+                "locations (e.g. city names), currency (e.g. CHF, £), income statements, "
+                "job titles, ages, relationship status, self-descriptions.\n"
+                "2. IMPLICIT signals: When an inference is based on HOW the person writes, "
+                "adjust the writing style. Examples: replace region-specific slang with neutral "
+                "alternatives (e.g. 'mate' → 'friend'), generalize strong cultural or language "
+                "references (e.g. non-English words that reveal national background), neutralize "
+                "vocabulary that strongly signals education level or professional field.\n\n"
+                "Only change what is necessary. Do not invent new information — generalize instead. "
+                "Keep the original meaning as much as possible, but style adjustments are acceptable when needed to remove implicit signals."
+            )
+            footer = (
+                "First, briefly list the changes you will make — separating explicit signal "
+                "removals from implicit style adjustments. Then write a single # on a new line "
+                "followed by the anonymized text. Only change relevant parts."
+            )
+        elif self.cfg.prompt_level == 5:  # Aggressive sentence rewrite for implicit signals
+            system_prompt = (
+                "You are an expert anonymizer. You apply two distinct strategies based on signal type:\n"
+                "- EXPLICIT signals (stated facts, named entities): substitute or generalize only the specific entity.\n"
+                "- IMPLICIT signals (writing style, slang, vocabulary register, cultural references, "
+                "syntax patterns): rewrite the ENTIRE sentence in plain, neutral English, "
+                "preserving only the factual content. Do NOT preserve tone, humor, slang, or "
+                "distinctive vocabulary in those sentences."
+            )
+            header = (
+                "Below are Reddit comments and personal inferences made from them. "
+                "Each inference is either fact-based (EXPLICIT) or style-based (IMPLICIT).\n\n"
+                "Apply these rules:\n"
+                "- EXPLICIT inference → locate the specific entity or stated fact → "
+                "substitute or generalize it, leave the rest of the sentence unchanged.\n"
+                "- IMPLICIT/STYLE inference → locate the sentence(s) that produce that signal → "
+                "rewrite those sentences entirely in neutral, formal English. "
+                "Remove slang, regional expressions, humor, technical jargon, non-English words, "
+                "and any phrasing that reveals background, age, or education.\n"
+                "- Sentences not linked to any inference: leave unchanged.\n\n"
+                "Do not invent new facts. Preserve the factual meaning of each sentence."
+            )
+            footer = (
+                "For each inference, state: EXPLICIT or IMPLICIT, which sentence it comes from, "
+                "and what you will do. Then write a single # on a new line followed by the "
+                "fully anonymized text."
+            )
 
         comments = profile.get_latest_comments().comments
         comment_string = "\n".join([str(c) for c in comments])
